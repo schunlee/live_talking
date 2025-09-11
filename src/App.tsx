@@ -1,23 +1,44 @@
-import { Box, Flex, Center, Button, useDisclosure, Presence, Spinner } from "@chakra-ui/react";
+import { Box, Flex, Center, Button, useDisclosure, Presence, Alert, } from "@chakra-ui/react";
 import StartButton from "./components/StartButton";
 import LanSelector from "./components/LanSelector";
 import StaticVideo from "./components/StaticVideo";
 import bgImg from '/src/assets/bg.jpg';
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 import ChatBox from "./components/ChatBox";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import StopButton from "./components/StopButton";
 import ChatSwitcher from "./components/ChatSwitcher";
 import { Tooltip } from "./components/ui/tooltip";
 import LoadingOverlay from "./components/LoadingOverlay";
+import useWebRTC from "./components/useWebRTC";
+import { useToast } from "@chakra-ui/toast";
+
+
+
 
 
 function App() {
   const { open, onToggle } = useDisclosure() // 控制 ChatBox 的显示与隐藏
-  const [showChatbox, setShowChatbox] = useState(false); // 控制按钮图标的切换
+  const [showChatbox, setShowChatbox] = useState(true); // 控制按钮图标的切换
   const [showMicroPhone, setShowMicroPhone] = useState(true); // 控制麦克风组件的显示与隐藏
   const [loading, setLoading] = useState(false); // 控制加载状态
-  const [showArrowBtn, setShowArrowBtn] = useState(false); // 控制箭头按钮的显示与隐藏
+  const [showArrowBtn, setShowArrowBtn] = useState(true); // 控制箭头按钮的显示与隐藏
+  const [showStaticVideo, setShowStaticVideo] = useState(true);
+
+  const { videoRef, start, stop, sessionId } = useWebRTC();
+  const toast = useToast()
+
+  const notify = (message: string, status: "success" | "error" | "info" | "warning" = "info") => {
+    alert(message);
+    toast({
+      title: message,
+      status: status,
+      duration: 5000,
+      isClosable: true,
+      position: "top-right", // 位置可以自定义
+    });
+  };
+
 
 
   function handleChatboxClick() {
@@ -29,15 +50,46 @@ function App() {
     setShowArrowBtn(visible);
   }
 
-  const toggleMicroPhone = () => {
+  useEffect(() => {
+    const videoEl = videoRef.current;
+    if (!videoEl) return;
+
+    const handleCanPlay = () => {
+      setTimeout(() => {
+        setLoading(false); // 视频可以播放，去掉遮罩
+        setShowStaticVideo(false); // 切换到 WebRTC 视频
+      }, 2000);
+    };
+
+    videoEl.addEventListener('canplay', handleCanPlay);
+
+    return () => {
+      videoEl.removeEventListener('canplay', handleCanPlay);
+    };
+  }, [videoRef]);
+
+  const toggleMicroPhone = async () => {
     if (showMicroPhone) {
       setLoading(true); // 开始加载
-      setTimeout(() => {
-        setLoading(false); // 模拟加载完成
-      }, 2000);
+      let status = await start(); // 等待 WebRTC 尝试连接完成
+      if (status) {
+        // setLoading(false); // 开始加载
+        // setShowStaticVideo(false); // 切换到 WebRTC 视频
+        // setTimeout(() => {  // 延时隐藏加载遮罩，确保视频流稳定
+        //   setLoading(false);
+        // }, 5000);
+        console.log('WebRTC 连接成功，可以继续执行后续逻辑');
+        // 这里放推流或者 UI 逻辑
+      } else {
+        setLoading(false);
+        notify("Failed to connect to the server. Please check your network or try again later.", "error");
+        return; // 退回，不执行后续
+      }
       handleArrowBtnVisibility(true);
-    }else{
+    } else {
       handleArrowBtnVisibility(false);
+      stop(); // 关闭连接
+      setShowStaticVideo(true); // 切换回静态视频
     }
     setShowMicroPhone(!showMicroPhone); // 切换显示状态
 
@@ -72,8 +124,11 @@ function App() {
       >
         <Center>
           {/* 背景视频 */}
-          <Box position="absolute" top={0} left={0} w="100%" h="100%" zIndex={0}>
-            <StaticVideo />
+          <Box position="absolute" top={0} left={0} w="100%" h="100%" zIndex={0} display={showStaticVideo ? "none" : "block"}>
+            <StaticVideo ref={videoRef} useWebRTCStream />
+          </Box>
+          <Box position="absolute" top={0} left={0} w="100%" h="100%" zIndex={0} display={showStaticVideo ? "block" : "none"}>
+            <StaticVideo/>
           </Box>
           {loading && <LoadingOverlay />}
           <Flex
@@ -134,13 +189,12 @@ function App() {
           </Box>}
           {!showMicroPhone && <Flex
             align="center"
-            gap={4}
             direction={{ base: "column", md: "row" }}
-            justify="center"
+            justify="space-evenly"
             width="100%" // 确保 Flex 容器占满其父元素的宽度
           >
             <ChatSwitcher />
-            <StopButton onClick={toggleMicroPhone} />
+            <Box ><StopButton onClick={toggleMicroPhone} /></Box>
           </Flex>}
 
         </Flex>
