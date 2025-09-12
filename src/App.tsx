@@ -12,7 +12,8 @@ import { Tooltip } from "./components/ui/tooltip";
 import LoadingOverlay from "./components/LoadingOverlay";
 import useWebRTC from "./components/useWebRTC";
 import { useToast } from "@chakra-ui/toast";
-
+import useVoiceRecording from "./components/useVoiceRecording";
+import avatar_client from '@/assets/avatar_client.png'
 
 
 
@@ -22,11 +23,41 @@ function App() {
   const [showChatbox, setShowChatbox] = useState(true); // 控制按钮图标的切换
   const [showMicroPhone, setShowMicroPhone] = useState(true); // 控制麦克风组件的显示与隐藏
   const [loading, setLoading] = useState(false); // 控制加载状态
-  const [showArrowBtn, setShowArrowBtn] = useState(true); // 控制箭头按钮的显示与隐藏
+  const [showArrowBtn, setShowArrowBtn] = useState(false); // 控制箭头按钮的显示与隐藏
   const [showStaticVideo, setShowStaticVideo] = useState(true);
+  const [isOn, setIsOn] = useState(false); // 控制开关状态
+  const [messages, setMessages] = useState<{ avatarUrl: string; messageText: string }[]>([]); // 聊天消息列表
+
 
   const { videoRef, start, stop, sessionId } = useWebRTC();
   const toast = useToast()
+
+  const { isRecording, startRecording, stopRecording } = useVoiceRecording({
+    onTranscript: async (text) => {
+      const newMessage = { avatarUrl: avatar_client, messageText: text };
+      console.log(newMessage);
+      
+      setMessages([newMessage, ...messages]); // 直接把识别的文字添加到对话框
+      try {
+            console.log('Sending chat message:', newMessage);
+
+            await fetch('/human', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    text: newMessage.messageText,
+                    type: 'chat',
+                    interrupt: true,
+                    sessionid: sessionId,
+                }),
+            });
+        } catch (error) {
+            console.error('发送失败:', error);
+        }
+    }
+  });
 
   const notify = (message: string, status: "success" | "error" | "info" | "warning" = "info") => {
     alert(message);
@@ -38,8 +69,6 @@ function App() {
       position: "top-right", // 位置可以自定义
     });
   };
-
-
 
   function handleChatboxClick() {
     setShowChatbox(!showChatbox);
@@ -58,6 +87,7 @@ function App() {
       setTimeout(() => {
         setLoading(false); // 视频可以播放，去掉遮罩
         setShowStaticVideo(false); // 切换到 WebRTC 视频
+        setShowArrowBtn(true);
       }, 2000);
     };
 
@@ -89,11 +119,28 @@ function App() {
     } else {
       handleArrowBtnVisibility(false);
       stop(); // 关闭连接
+      if (open) {
+        onToggle(); // 关闭聊天框
+      }
+
+      setShowChatbox(true); // 重置按钮状态
       setShowStaticVideo(true); // 切换回静态视频
     }
     setShowMicroPhone(!showMicroPhone); // 切换显示状态
 
   };
+
+  const voiceRecord = () => {
+    setIsOn(!isOn);
+    console.info("Voice recording feature is under development. Please stay tuned!");
+    if (isRecording) {
+      stopRecording();
+    } else {
+      startRecording();
+    }
+  }
+
+
 
 
 
@@ -128,7 +175,7 @@ function App() {
             <StaticVideo ref={videoRef} useWebRTCStream />
           </Box>
           <Box position="absolute" top={0} left={0} w="100%" h="100%" zIndex={0} display={showStaticVideo ? "block" : "none"}>
-            <StaticVideo/>
+            <StaticVideo />
           </Box>
           {loading && <LoadingOverlay />}
           <Flex
@@ -157,7 +204,7 @@ function App() {
                   boxShadow={
                     '0px 1px 25px -5px rgb(66 153 225 / 48%), 0 10px 10px -5px rgb(66 153 225 / 43%)'
                   }>
-                  {showChatbox ? <FaArrowLeft /> : <FaArrowRight />}
+                  {showChatbox ? <FaArrowRight /> : <FaArrowLeft />}
                 </Button>
               </Tooltip>}
             </Center>
@@ -179,7 +226,7 @@ function App() {
             boxShadow="lg" >
             <Flex gap="1" direction="column">
               <Center h={{ md: "70px", base: "50px" }} fontSize={{ md: "24px", base: "14px" }} fontWeight="bold">
-                👋 Welcome to Live Talking
+                👋 Welcome to Anton AI Avatar
               </Center>
               <Flex align="center" gap="10" justify="space-evenly" direction={{ base: "column", md: "row" }}>
                 <LanSelector />
@@ -193,7 +240,7 @@ function App() {
             justify="space-evenly"
             width="100%" // 确保 Flex 容器占满其父元素的宽度
           >
-            <ChatSwitcher />
+            <ChatSwitcher isOn={isOn} onToggle={voiceRecord} />
             <Box ><StopButton onClick={toggleMicroPhone} /></Box>
           </Flex>}
 
@@ -205,7 +252,7 @@ function App() {
         animationDuration="moderate"
       >
         <Center>
-          <ChatBox />
+          <ChatBox sessionId={sessionId} messages={messages} setMessages={setMessages} />
         </Center>
       </Presence>
 

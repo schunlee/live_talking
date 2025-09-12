@@ -12,7 +12,7 @@ const StaticVideo = forwardRef<HTMLVideoElement, StaticVideoProps>(
         ref={ref}   // 关键：把 ref 传给 video，让父组件能操作 srcObject
         src={useWebRTCStream ? undefined : static_video} // 如果用 WebRTC 流，不设置 src
         autoPlay
-        muted
+        muted={useWebRTCStream? false : true} // WebRTC 流不静音
         loop={!useWebRTCStream}   // WebRTC 流不需要 loop
         playsInline
         style={{

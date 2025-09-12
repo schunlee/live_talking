@@ -3,20 +3,30 @@ import { HiOutlineMicrophone } from 'react-icons/hi'
 import { PiMicrophoneSlashLight } from 'react-icons/pi'
 import { Tooltip } from "@/components/ui/tooltip"
 
-const ChatSwitcher = () => {
+interface ChatSwitcherProps {
+    isOn: boolean;
+    onToggle: () => void;
+}
+
+const ChatSwitcher = ({ isOn, onToggle }: ChatSwitcherProps) => {
     return (
-        <Switch.Root colorPalette="blue" size="lg">
+        <Switch.Root
+            colorPalette="blue"
+            size="lg"
+            onCheckedChange={onToggle}
+            checked={isOn}>
+
             <Switch.HiddenInput />
-            
+
             <Switch.Control>
                 <Switch.Thumb />
                 <Tooltip showArrow content="Turn on/off the microphone">
-                <Switch.Indicator fallback={<Icon as={HiOutlineMicrophone} color="gray.400" />}>
-                    <Icon as={PiMicrophoneSlashLight} color="white" />
-                </Switch.Indicator>
+                    <Switch.Indicator fallback={<Icon as={PiMicrophoneSlashLight} color="gray.400" />}>
+                        <Icon as={HiOutlineMicrophone} color="white" />
+                    </Switch.Indicator>
                 </Tooltip>
             </Switch.Control>
-            
+
             <Switch.Label></Switch.Label>
         </Switch.Root>
     )
