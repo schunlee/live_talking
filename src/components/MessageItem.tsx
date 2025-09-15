@@ -14,7 +14,7 @@ const MessageItem = ({ avatarUrl, messageText }: MessageItemProps) => {
         outlineStyle: "solid",
     })
     return (
-        <Flex align="flex-start" gap={3} mb={4}>
+        <Flex align="flex-start" gap={2} mb={2}>
             {/* 左边头像 */}
             <Avatar.Root css={ringCss} colorPalette="pink" size={"xs"} key={"xs"}>
                 <Avatar.Fallback name="X" />
@@ -24,10 +24,10 @@ const MessageItem = ({ avatarUrl, messageText }: MessageItemProps) => {
             {/* 右边消息气泡 */}
             <Box
                 bg="gray.100"
-                px={4}
+                px={2}
                 py={2}
                 borderRadius="lg"
-                w="250px"
+                w="300px"
                 boxShadow="sm"
             >
                 <Text fontSize="md" color="gray.800">

@@ -1,7 +1,10 @@
 import { useRef, useState, useEffect } from "react";
 
+interface UseWebRTCOptions {
+  language?: string; // 可选参数
+}
 
-const useWebRTC = () => {
+const useWebRTC = ({ language }: UseWebRTCOptions) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [pc, setPc] = useState<RTCPeerConnection | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -52,7 +55,8 @@ const useWebRTC = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           sdp: peer.localDescription?.sdp,
-          type: peer.localDescription?.type
+          type: peer.localDescription?.type,
+          language: language
         }),
       });
       if (!response.ok) {

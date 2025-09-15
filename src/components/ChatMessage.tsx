@@ -11,7 +11,7 @@ const ChatMessage = ({ messages }: ChatMessageProps) => {
       w="100%"
       h="100%"
       bgColor="rgba(255, 255, 255, 0.75)" // 设置半透明背景
-      p={10}
+      p={8}
       borderRadius="xl"
       mb="10px"
       backdropFilter="blur(10px)" // 添加磨砂效果
@@ -22,7 +22,7 @@ const ChatMessage = ({ messages }: ChatMessageProps) => {
         direction="column-reverse"  // 让最新消息显示在底部
         alignItems="flex-start"
         minH="100%"
-        gap={3}
+        gap={2}
       >
         {messages.map((item, index) => (
           <MessageItem key={index} avatarUrl={item.avatarUrl} messageText={item.messageText} />

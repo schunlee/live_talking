@@ -3,6 +3,7 @@ import { AiOutlineSend } from 'react-icons/ai'
 import ChatMessage from './ChatMessage'
 import { useState } from 'react';
 import avatar_client from '@/assets/avatar_client.png'
+import avatar_ai from '@/assets/avatar_ai.png'
 
 
 
@@ -21,13 +22,13 @@ const ChatBox = ({ sessionId, messages, setMessages }: ChatBoxProps) => {
     const handleSubmit = async () => {
         if (!inputMsg) return; // 如果输入为空，直接返回
         const newMessage = { avatarUrl: avatar_client, messageText: inputMsg };
-        setMessages([newMessage, ...messages]);
+        setMessages((prev) => [...prev, newMessage]);
         setInputMsg("")
 
         try {
             console.log('Sending chat message:', inputMsg);
 
-            await fetch('/human', {
+            let resp = await fetch('/human', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -39,6 +40,13 @@ const ChatBox = ({ sessionId, messages, setMessages }: ChatBoxProps) => {
                     sessionid: sid,
                 }),
             });
+            let data = await resp.json();
+            const reply = data.msg;
+            const replayMsg = { avatarUrl: avatar_ai, messageText: reply };
+            setTimeout(() => {
+                setMessages((prev) => [...prev, replayMsg]);
+            }, 3000)
+
         } catch (error) {
             console.error('发送失败:', error);
         }

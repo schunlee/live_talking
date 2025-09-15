@@ -14,6 +14,7 @@ import useWebRTC from "./components/useWebRTC";
 import { useToast } from "@chakra-ui/toast";
 import useVoiceRecording from "./components/useVoiceRecording";
 import avatar_client from '@/assets/avatar_client.png'
+import avatar_ai from '@/assets/avatar_ai.png'
 
 
 
@@ -27,35 +28,41 @@ function App() {
   const [showStaticVideo, setShowStaticVideo] = useState(true);
   const [isOn, setIsOn] = useState(false); // 控制开关状态
   const [messages, setMessages] = useState<{ avatarUrl: string; messageText: string }[]>([]); // 聊天消息列表
+  const [lan, setLan] = useState("zh");
 
-
-  const { videoRef, start, stop, sessionId } = useWebRTC();
+  const { videoRef, start, stop, sessionId } = useWebRTC({ language: lan });
   const toast = useToast()
 
   const { isRecording, startRecording, stopRecording } = useVoiceRecording({
     onTranscript: async (text) => {
       const newMessage = { avatarUrl: avatar_client, messageText: text };
       console.log(newMessage);
-      
+
       setMessages([newMessage, ...messages]); // 直接把识别的文字添加到对话框
       try {
-            console.log('Sending chat message:', newMessage);
+        console.log('Sending chat message:', newMessage);
 
-            await fetch('/human', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    text: newMessage.messageText,
-                    type: 'chat',
-                    interrupt: true,
-                    sessionid: sessionId,
-                }),
-            });
-        } catch (error) {
-            console.error('发送失败:', error);
-        }
+        let resp = await fetch('/human', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            text: newMessage.messageText,
+            type: 'chat',
+            interrupt: true,
+            sessionid: sessionId,
+          }),
+        });
+        let data = await resp.json();
+        const reply = data.msg;
+        const replayMsg = { avatarUrl: avatar_ai, messageText: reply };
+        setTimeout(() => {
+          setMessages((prev) => [...prev, replayMsg]);
+        }, 3000)
+      } catch (error) {
+        console.error('发送失败:', error);
+      }
     }
   });
 
@@ -229,7 +236,7 @@ function App() {
                 👋 Welcome to Anton AI Avatar
               </Center>
               <Flex align="center" gap="10" justify="space-evenly" direction={{ base: "column", md: "row" }}>
-                <LanSelector />
+                <LanSelector value={lan} onChange={setLan} />
                 <StartButton onClick={toggleMicroPhone} />
               </Flex>
             </Flex>
