@@ -1,0 +1,14 @@
+{
+  "welcome": "安东数字人",
+  "start+btn": "开始",
+  "start_toolip": "开始机器人会话",
+  "language_select": "选择AI模型语言",
+  "status_tag": "AI机器人状态",
+  "arrow_btn": "展开/关闭对话框",
+  "input_box": "请这里输入您想说的...",
+  "stop_btn": "关闭机器人会话",
+  "pause_btn": "中断机器人会话",
+  "record_btn": "Turn on/off the microphone",
+  "waiting_msg": "Loading up your avatar now for a realtime interactive experience.",
+  "waiting_title": "连线中..."
+}
