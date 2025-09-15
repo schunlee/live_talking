@@ -8,6 +8,7 @@ const useWebRTC = ({ language }: UseWebRTCOptions) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [pc, setPc] = useState<RTCPeerConnection | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
 
   // 建立连接
   const start = async () => {
@@ -25,6 +26,9 @@ const useWebRTC = ({ language }: UseWebRTCOptions) => {
     peer.addEventListener("track", (evt) => {
       if (evt.track.kind === "video" && videoRef.current) {
         videoRef.current.srcObject = evt.streams[0];
+      }
+      if (evt.track.kind === "audio") {
+        setAudioStream(evt.streams[0]); // 暴露音频流
       }
     });
 
@@ -102,7 +106,7 @@ const useWebRTC = ({ language }: UseWebRTCOptions) => {
     };
   }, [pc]);
 
-  return { videoRef, start, stop, sessionId };
+  return { videoRef, start, stop, sessionId, audioStream };
 };
 
 export default useWebRTC;

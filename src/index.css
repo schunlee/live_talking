@@ -1,6 +1,9 @@
+@import "tailwindcss";
+
 @font-face {
   font-family: 'CustomFont'; /* 自定义字体名称 */
   src: url('./assets/mulish-latin-700-normal-72da4948.woff2') format('woff2');
   font-weight: normal;
   font-style: normal;
 }
+

@@ -11,10 +11,11 @@ interface ChatBoxProps {
     sessionId?: string | null;
     messages: { avatarUrl: string; messageText: string }[];
     setMessages: React.Dispatch<React.SetStateAction<{ avatarUrl: string; messageText: string }[]>>;
+    setStatusText: React.Dispatch<React.SetStateAction<string>>;
 }
 
 
-const ChatBox = ({ sessionId, messages, setMessages }: ChatBoxProps) => {
+const ChatBox = ({ sessionId, messages, setMessages, setStatusText }: ChatBoxProps) => {
     const sid = sessionId ? parseInt(sessionId) : 0;
     const [inputMsg, setInputMsg] = useState("");
 
@@ -45,7 +46,8 @@ const ChatBox = ({ sessionId, messages, setMessages }: ChatBoxProps) => {
             const replayMsg = { avatarUrl: avatar_ai, messageText: reply };
             setTimeout(() => {
                 setMessages((prev) => [...prev, replayMsg]);
-            }, 3000)
+            }, 2000)
+            setStatusText("Opening")
 
         } catch (error) {
             console.error('发送失败:', error);
@@ -68,7 +70,7 @@ const ChatBox = ({ sessionId, messages, setMessages }: ChatBoxProps) => {
             boxShadow="lg"
             h={{ base: "20px", md: "80vh" }}
             ml={10}
-            minW={{ md: "400px", base: '200px' }}
+            minW={{ md: "440px", base: '440px' }}
             bg={"blue.100"}
             borderRadius="2xl">
             <Flex direction={'column'} h="100%" p={4} justifyContent="flex-end">

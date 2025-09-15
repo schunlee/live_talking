@@ -1,20 +1,24 @@
-import { Box, Flex, Center, Button, useDisclosure, Presence, Alert, } from "@chakra-ui/react";
+import { Box, Flex, Center, useDisclosure, Presence, } from "@chakra-ui/react";
 import StartButton from "./components/StartButton";
 import LanSelector from "./components/LanSelector";
 import StaticVideo from "./components/StaticVideo";
 import bgImg from '/src/assets/bg.jpg';
-import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 import ChatBox from "./components/ChatBox";
 import { useEffect, useState } from "react";
 import StopButton from "./components/StopButton";
 import ChatSwitcher from "./components/ChatSwitcher";
-import { Tooltip } from "./components/ui/tooltip";
 import LoadingOverlay from "./components/LoadingOverlay";
 import useWebRTC from "./components/useWebRTC";
 import { useToast } from "@chakra-ui/toast";
 import useVoiceRecording from "./components/useVoiceRecording";
 import avatar_client from '@/assets/avatar_client.png'
 import avatar_ai from '@/assets/avatar_ai.png'
+import PauseButton from "./components/PauseButton";
+import ArrowButton from "./components/ArrowButton";
+import StatusTag from "./components/StatusTag";
+import { LiveAudioVisualizer } from "react-audio-visualize";
+import { RemoteAudioVisualizer } from "./components/RemoteAudioVisualizer";
+import RecordButton from "./components/RecordButton";
 
 
 
@@ -29,8 +33,9 @@ function App() {
   const [isOn, setIsOn] = useState(false); // 控制开关状态
   const [messages, setMessages] = useState<{ avatarUrl: string; messageText: string }[]>([]); // 聊天消息列表
   const [lan, setLan] = useState("zh");
+  const [statusText, setStatusText] = useState('Closing');
 
-  const { videoRef, start, stop, sessionId } = useWebRTC({ language: lan });
+  const { videoRef, start, stop, sessionId, audioStream } = useWebRTC({ language: lan });
   const toast = useToast()
 
   const { isRecording, startRecording, stopRecording } = useVoiceRecording({
@@ -59,7 +64,8 @@ function App() {
         const replayMsg = { avatarUrl: avatar_ai, messageText: reply };
         setTimeout(() => {
           setMessages((prev) => [...prev, replayMsg]);
-        }, 3000)
+        }, 2000)
+        setStatusText("Opening");
       } catch (error) {
         console.error('发送失败:', error);
       }
@@ -95,6 +101,7 @@ function App() {
         setLoading(false); // 视频可以播放，去掉遮罩
         setShowStaticVideo(false); // 切换到 WebRTC 视频
         setShowArrowBtn(true);
+        onToggle();
       }, 2000);
     };
 
@@ -105,16 +112,26 @@ function App() {
     };
   }, [videoRef]);
 
+  const pauseMicroPhone = async () => {
+    let resp = await fetch('/interrupt_talk', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        sessionid: sessionId,
+      }),
+    });
+    let data = await resp.json();
+    console.log(data);
+    setStatusText("Pausing")
+  }
+
   const toggleMicroPhone = async () => {
     if (showMicroPhone) {
       setLoading(true); // 开始加载
       let status = await start(); // 等待 WebRTC 尝试连接完成
       if (status) {
-        // setLoading(false); // 开始加载
-        // setShowStaticVideo(false); // 切换到 WebRTC 视频
-        // setTimeout(() => {  // 延时隐藏加载遮罩，确保视频流稳定
-        //   setLoading(false);
-        // }, 5000);
         console.log('WebRTC 连接成功，可以继续执行后续逻辑');
         // 这里放推流或者 UI 逻辑
       } else {
@@ -122,6 +139,7 @@ function App() {
         notify("Failed to connect to the server. Please check your network or try again later.", "error");
         return; // 退回，不执行后续
       }
+      setStatusText("Opening");
       handleArrowBtnVisibility(true);
     } else {
       handleArrowBtnVisibility(false);
@@ -129,7 +147,7 @@ function App() {
       if (open) {
         onToggle(); // 关闭聊天框
       }
-
+      setStatusText("Closing");
       setShowChatbox(true); // 重置按钮状态
       setShowStaticVideo(true); // 切换回静态视频
     }
@@ -146,14 +164,6 @@ function App() {
       startRecording();
     }
   }
-
-
-
-
-
-
-
-
   return (
     <Flex
       h="100vh"
@@ -170,9 +180,7 @@ function App() {
         position="relative"   // 让子元素能绝对定位
         h={{ md: "80vh", base: "100vh" }}
         w={{ md: "80%", base: "100vh" }}
-
         maxW="1200px"
-
         borderRadius="2xl"
         overflow="hidden"     // 裁剪视频避免溢出圆角
       >
@@ -197,23 +205,30 @@ function App() {
             zIndex={2}
           >
             <Center>
-              {showArrowBtn && <Tooltip showArrow content="Open Chat Box">
-                <Button
-                  h={{ md: "40px", base: "40px" }}             // 设置高度
-                  w={{ md: "40px", base: "40px" }}
-                  fontSize={'sm'}
-                  mr={{ md: "20px", base: "30px" }}         // 设置宽度
-                  rounded={'full'}
-                  bg={'blue.500'}
-                  color={'white'}
-                  borderRadius="full"
-                  onClick={handleChatboxClick}
-                  boxShadow={
-                    '0px 1px 25px -5px rgb(66 153 225 / 48%), 0 10px 10px -5px rgb(66 153 225 / 43%)'
-                  }>
-                  {showChatbox ? <FaArrowRight /> : <FaArrowLeft />}
-                </Button>
-              </Tooltip>}
+              {showArrowBtn && <ArrowButton direction={showChatbox ? "LEFT" : "RIGHT"} togglePanel={handleChatboxClick} />}
+            </Center>
+          </Flex>
+
+          <Flex
+            direction={"column"}
+            position="absolute"  // 绝对定位
+            top="10vh"            // 垂直居中
+            left="10vw"           // 水平居中
+            transform="translate(-50%, -50%)" // 使中心点对齐
+            align="center"
+            justify="center"
+            gap={4}
+            zIndex={2}
+          >
+            <Center>
+              <Flex direction="column"
+                alignItems="center"
+                justifyContent="center"  // 垂直居中
+                height="100%">
+                <StatusTag content={statusText} />
+                <Box mt={5} ml={5}><RemoteAudioVisualizer audioStream={audioStream} width={80} height={40} /></Box>
+
+              </Flex>
             </Center>
           </Flex>
         </Center>
@@ -227,7 +242,7 @@ function App() {
           justify="center"
           pb="40px"
         >
-          {showMicroPhone && <Box h={{ md: "140px", base: "150px" }} w={{ md: "480px", base: "210px" }} bg="rgba(255, 255, 255, 0.85)"
+          {showMicroPhone && <Box h={{ md: "140px", base: "150px" }} w={{ md: "480px", base: "210px" }} bg="rgba(255, 255, 255, 0.55)"
             backdropFilter="blur(6px)"
             borderRadius="2xl"
             boxShadow="lg" >
@@ -247,10 +262,13 @@ function App() {
             justify="space-evenly"
             width="100%" // 确保 Flex 容器占满其父元素的宽度
           >
-            <ChatSwitcher isOn={isOn} onToggle={voiceRecord} />
+            <Flex alignItems="center" >
+              {/* <ChatSwitcher isOn={isOn} onToggle={voiceRecord} /> */}
+              <RecordButton isPulsing={isOn} handleClick={voiceRecord}/>
+              <PauseButton onClick={pauseMicroPhone} />
+            </Flex>
             <Box ><StopButton onClick={toggleMicroPhone} /></Box>
           </Flex>}
-
         </Flex>
       </Box>
       <Presence
@@ -259,10 +277,9 @@ function App() {
         animationDuration="moderate"
       >
         <Center>
-          <ChatBox sessionId={sessionId} messages={messages} setMessages={setMessages} />
+          <ChatBox sessionId={sessionId} messages={messages} setMessages={setMessages} setStatusText={setStatusText} />
         </Center>
       </Presence>
-
     </Flex>
   );
 }
