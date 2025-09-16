@@ -12,7 +12,7 @@ export const RemoteAudioVisualizer = ({
   maxHeight = 60,
 }: Props) => {
   const [bars, setBars] = useState<number[]>(Array(barCount).fill(4));
-  const rafIdRef = useRef<number>();
+  const rafIdRef = useRef<number>(0);
 
   useEffect(() => {
     if (!audioStream) return;

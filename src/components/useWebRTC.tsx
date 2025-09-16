@@ -1,67 +1,48 @@
-import { useRef, useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface UseWebRTCOptions {
-  language?: string; // 可选参数
+  language?: string;
+  onSessionId?: (id: string | null) => void; // 新增回调
 }
 
-const useWebRTC = ({ language }: UseWebRTCOptions) => {
+const useWebRTC = ({ language, onSessionId }: UseWebRTCOptions) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [pc, setPc] = useState<RTCPeerConnection | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
 
-  // 建立连接
+  // 当 sessionId 改变时，调用回调同步给外部
+  useEffect(() => {
+    if (onSessionId) onSessionId(sessionId);
+  }, [sessionId, onSessionId]);
+
   const start = async () => {
-    const config: RTCConfiguration = {
+    const peer = new RTCPeerConnection({
       sdpSemantics: "unified-plan",
-      iceServers: [{ urls: ["stun:stun.l.google.com:19302"] }], // 默认打开 STUN
-    };
+      iceServers: [{ urls: ["stun:stun.l.google.com:19302"] }],
+    }) ;
 
-    const peer = new RTCPeerConnection(config);
-
-    // 只接收 video
     peer.addTransceiver("video", { direction: "recvonly" });
-    peer.addTransceiver('audio', { direction: 'recvonly' });
+    peer.addTransceiver("audio", { direction: "recvonly" });
 
     peer.addEventListener("track", (evt) => {
       if (evt.track.kind === "video" && videoRef.current) {
         videoRef.current.srcObject = evt.streams[0];
-        console.log("✅ 收到远端视频 track");
       }
       if (evt.track.kind === "audio") {
-        setAudioStream(evt.streams[0]); // 暴露音频流
-        console.log("✅ 收到远端音频 track");
+        setAudioStream(evt.streams[0]);
       }
-    });
-
-    peer.addEventListener("iceconnectionstatechange", () => {
-      console.log("ICE state:", peer.iceConnectionState);
-    });
-    peer.addEventListener("connectionstatechange", () => {
-      console.log("Connection state:", peer.connectionState);
     });
 
     setPc(peer);
 
-    setInterval(async () => {
-  const stats = await peer.getStats();
-  stats.forEach(report => {
-    if (report.type === "inbound-rtp" && report.kind === "video") {
-      console.log("📊 video packets:", report.packetsReceived, "framesDecoded:", report.framesDecoded);
-    }
-  });
-}, 2000);
-
     try {
-      // 生成 offer
       const offer = await peer.createOffer();
       await peer.setLocalDescription(offer);
 
-      // 等待 ICE 完成
       await new Promise<void>((resolve) => {
-        if (peer.iceGatheringState === "complete") {
-          resolve();
-        } else {
+        if (peer.iceGatheringState === "complete") resolve();
+        else {
           const checkState = () => {
             if (peer.iceGatheringState === "complete") {
               peer.removeEventListener("icegatheringstatechange", checkState);
@@ -71,22 +52,21 @@ const useWebRTC = ({ language }: UseWebRTCOptions) => {
           peer.addEventListener("icegatheringstatechange", checkState);
         }
       });
-      // 发送到服务器
+
       const response = await fetch("/offer", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           sdp: peer.localDescription?.sdp,
           type: peer.localDescription?.type,
-          language: language
+          language,
         }),
       });
-      if (!response.ok) {
-        throw new Error(`Offer request failed: ${response.status} ${response.statusText}`);
-      }
+
+      if (!response.ok) throw new Error(`Offer request failed: ${response.status}`);
 
       const answer = await response.json();
-      setSessionId(answer.sessionid);
+      setSessionId(answer.sessionid); // ✅ 更新状态并触发回调
 
       await peer.setRemoteDescription(answer);
       return true;
@@ -96,33 +76,11 @@ const useWebRTC = ({ language }: UseWebRTCOptions) => {
     }
   };
 
-  // 关闭连接
   const stop = () => {
-    if (pc) {
-      pc.close();
-      setPc(null);
-    }
+    if (pc) pc.close();
+    setPc(null);
+    setSessionId(null); // 停止时清空 sessionId
   };
-
-  // 页面关闭时清理
-  useEffect(() => {
-    const handleUnload = () => {
-      if (pc) {
-        pc.close();
-      }
-    };
-
-    window.addEventListener("beforeunload", handleUnload);
-    window.addEventListener("unload", handleUnload);
-
-    return () => {
-      window.removeEventListener("beforeunload", handleUnload);
-      window.removeEventListener("unload", handleUnload);
-      if (pc) {
-        pc.close();
-      }
-    };
-  }, [pc]);
 
   return { videoRef, start, stop, sessionId, audioStream };
 };

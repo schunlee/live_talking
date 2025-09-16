@@ -40,6 +40,15 @@ function App() {
   const { videoRef, start, stop, sessionId, audioStream } = useWebRTC({ language: lan });
   const toast = useToast();
 
+
+  useEffect(() => {
+    if (!isSpeaking) {
+      setShowStaticVideo(true);
+    } else {
+      setShowStaticVideo(false);
+    }
+  }, [isSpeaking])
+
   const checkSpeaking = async () => {
     if (!sessionId) return;
 
@@ -73,7 +82,7 @@ function App() {
   };
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: number;
 
     if (sessionId) {
       interval = setInterval(checkSpeaking, 500); // 每 0.5s 检查一次

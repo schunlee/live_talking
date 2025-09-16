@@ -1,4 +1,4 @@
-import { forwardRef, useEffect } from "react";
+import { forwardRef } from "react";
 import static_video from '/src/assets/waiting.mp4';
 
 interface StaticVideoProps {
