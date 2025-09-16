@@ -34,7 +34,9 @@ function App() {
   const [statusText, setStatusText] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false); // 数字人是否在说话
   const [silentCount, setSilentCount] = useState(0);   // 连续静音计数
-  const silentThreshold = 4;                            // 连续静音阈值
+  const silentThreshold = 4;
+  const welcomeMsg = "请介绍一下你自己，欢迎用户使用安东数字人平台，字数不要超过200字";
+  const [welcome, setWelcome] = useState(false);                           // 连续静音阈值
 
 
   const { videoRef, start, stop, sessionId, audioStream } = useWebRTC({ language: lan });
@@ -51,6 +53,10 @@ function App() {
 
   const checkSpeaking = async () => {
     if (!sessionId) return;
+    if (!welcome) {
+      handleSendTranscript(welcomeMsg);
+      setWelcome(true);
+    }
 
     try {
       const resp = await fetch("/is_speaking", {

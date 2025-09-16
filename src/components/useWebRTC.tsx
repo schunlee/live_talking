@@ -20,7 +20,7 @@ const useWebRTC = ({ language, onSessionId }: UseWebRTCOptions) => {
     const peer = new RTCPeerConnection({
       sdpSemantics: "unified-plan",
       iceServers: [{ urls: ["stun:stun.l.google.com:19302"] }],
-    }) ;
+    } as RTCConfiguration) ;
 
     peer.addTransceiver("video", { direction: "recvonly" });
     peer.addTransceiver("audio", { direction: "recvonly" });
