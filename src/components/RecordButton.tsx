@@ -24,10 +24,10 @@ const RecordButton = ({ isPulsing, handleClick }: RecordButtonProps) => {
                 borderRadius="full"
                 // _hover={{ bg: "blue.600" }}
                 boxShadow="lg"
-                animationName={isPulsing ? "pulse" : undefined}
-                animationDuration={isPulsing ? "1s" : undefined}
-                animationTimingFunction={isPulsing ? "ease-in-out" : undefined}
-                animationIterationCount={isPulsing ? "infinite" : undefined}
+                // animationName={isPulsing ? "pulse" : undefined}
+                // animationDuration={isPulsing ? "1s" : undefined}
+                // animationTimingFunction={isPulsing ? "ease-in-out" : undefined}
+                // animationIterationCount={isPulsing ? "infinite" : undefined}
                 onClick={handleClick}
             >
                 {isPulsing ? <HiOutlineMicrophone /> : <PiMicrophoneSlashLight />}

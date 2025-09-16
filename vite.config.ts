@@ -27,6 +27,11 @@ export default defineConfig({
         changeOrigin: true, // 适用于虚拟托管的站点
         secure: true, // 如果目标是HTTPS，设置为true
       },
+      '/is_speaking': {
+        target: 'https://avatar.antonoil.com', // 代理目标
+        changeOrigin: true, // 适用于虚拟托管的站点
+        secure: true, // 如果目标是HTTPS，设置为true
+      },
 
     }
   }

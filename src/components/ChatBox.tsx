@@ -12,7 +12,7 @@ interface ChatBoxProps {
     sessionId?: string | null;
     messages: { avatarUrl: string; messageText: string }[];
     setMessages: React.Dispatch<React.SetStateAction<{ avatarUrl: string; messageText: string }[]>>;
-    setStatusText: React.Dispatch<React.SetStateAction<string>>;
+    setStatusText: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 
@@ -48,7 +48,7 @@ const ChatBox = ({ sessionId, messages, setMessages, setStatusText }: ChatBoxPro
             setTimeout(() => {
                 setMessages((prev) => [...prev, replayMsg]);
             }, 3000)
-            setStatusText(t("open_status"))
+            setStatusText(true)
 
         } catch (error) {
             console.error('发送失败:', error);

@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@audiowave/core": "^0.3.0",
+    "@audiowave/react": "^0.6.1",
     "@chakra-ui/cli": "^3.26.0",
     "@chakra-ui/react": "^3.26.0",
     "@chakra-ui/toast": "^7.0.2",
@@ -23,7 +25,8 @@
     "react-dom": "^19.1.1",
     "react-i18next": "^15.7.3",
     "react-icons": "^5.5.0",
-    "react-speech-recognition": "^4.0.1"
+    "react-speech-recognition": "^4.0.1",
+    "react-spinners": "^0.17.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",

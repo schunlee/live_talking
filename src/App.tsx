@@ -1,4 +1,4 @@
-import { Box, Flex, Center, useDisclosure, Presence, Spacer } from "@chakra-ui/react";
+import { Box, Flex, Center, useDisclosure, Presence } from "@chakra-ui/react";
 import StartButton from "./components/StartButton";
 import LanSelector from "./components/LanSelector";
 import StaticVideo from "./components/StaticVideo";
@@ -14,11 +14,11 @@ import avatar_client from '@/assets/avatar_client.png';
 import avatar_ai from '@/assets/avatar_ai.png';
 import PauseButton from "./components/PauseButton";
 import ArrowButton from "./components/ArrowButton";
-import StatusTag from "./components/StatusTag";
 import { RemoteAudioVisualizer } from "./components/RemoteAudioVisualizer";
 import RecordButton from "./components/RecordButton";
 import { useTranslation } from "react-i18next";
 import "./locales";
+import AudioWaveButton from "./components/AudioWaveButton";
 
 function App() {
   const { t } = useTranslation();
@@ -31,10 +31,58 @@ function App() {
   const [isOn, setIsOn] = useState(false);
   const [messages, setMessages] = useState<{ avatarUrl: string; messageText: string }[]>([]);
   const [lan, setLan] = useState("zh");
-  const [statusText, setStatusText] = useState(t("close_status"));
+  const [statusText, setStatusText] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false); // 数字人是否在说话
+  const [silentCount, setSilentCount] = useState(0);   // 连续静音计数
+  const silentThreshold = 4;                            // 连续静音阈值
+
 
   const { videoRef, start, stop, sessionId, audioStream } = useWebRTC({ language: lan });
   const toast = useToast();
+
+  const checkSpeaking = async () => {
+    if (!sessionId) return;
+
+    try {
+      const resp = await fetch("/is_speaking", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionid: sessionId }),
+      });
+      const data = await resp.json();
+
+      if (data.code === 0) {
+        if (data.data) {
+          // 数字人正在说话
+          setIsSpeaking(true);
+          setSilentCount(0);
+        } else {
+          // 数字人没说话
+          setSilentCount(prev => prev + 1);
+
+          if (silentCount + 1 > silentThreshold) {
+            setIsSpeaking(false);
+          }
+        }
+      } else {
+        console.error("请求失败", data.code);
+      }
+    } catch (err) {
+      console.error("检查说话状态失败", err);
+    }
+  };
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+
+    if (sessionId) {
+      interval = setInterval(checkSpeaking, 500); // 每 0.5s 检查一次
+    }
+
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [sessionId, silentCount]);
 
   const {
     transcript,
@@ -66,7 +114,7 @@ function App() {
       const data = await resp.json();
       const replyMsg = { avatarUrl: avatar_ai, messageText: data.msg };
       setMessages(prev => [...prev, replyMsg]);
-      setStatusText(t("open_status"));
+      setStatusText(true);
     } catch (err) {
       console.error('发送失败', err);
       toast({
@@ -161,7 +209,7 @@ function App() {
     });
     const data = await resp.json();
     console.log(data);
-    setStatusText(t("pause_status"));
+    setStatusText(true);
   };
 
   const toggleMicroPhone = async () => {
@@ -173,13 +221,14 @@ function App() {
         notify("Failed to connect to the server. Please check your network or try again later.", "error");
         return;
       }
-      setStatusText(t("open_status"));
+      setStatusText(true);
       handleArrowBtnVisibility(true);
     } else {
       handleArrowBtnVisibility(false);
       stop();
+      voiceRecord();
       if (open) onToggle();
-      setStatusText(t("close_status"));
+      setStatusText(false);
       setShowChatbox(true);
       setShowStaticVideo(true);
     }
@@ -242,9 +291,9 @@ function App() {
           >
             <Center>
               <Flex direction="column" alignItems="center" justifyContent="center" height="100%">
-                <StatusTag content={statusText} />
+                {/* <StatusTag content={statusText} /> */}
                 <Box mt={5} ml={0} borderRadius="md">
-                  <RemoteAudioVisualizer audioStream={audioStream} width={50} height={30} />
+                  {statusText && <RemoteAudioVisualizer audioStream={audioStream} />}
                 </Box>
               </Flex>
             </Center>
@@ -275,13 +324,13 @@ function App() {
           )}
           {!showMicroPhone && (
             <Flex align="center" direction={{ base: "column", md: "row" }} justify="space-evenly" width="100%">
-              <Flex alignItems="center">
-                <RecordButton isPulsing={isOn} handleClick={voiceRecord} />
-
+              <Flex>
+                {!listening && <RecordButton isPulsing={isOn} handleClick={voiceRecord} />}
+                {listening && <AudioWaveButton handleClick={voiceRecord} />}
               </Flex>
               <Flex alignItems="center" gap={5}>
                 <Box><StopButton onClick={toggleMicroPhone} /></Box>
-                <PauseButton onClick={pauseMicroPhone}/>
+                <PauseButton onClick={pauseMicroPhone} />
               </Flex>
 
             </Flex>
