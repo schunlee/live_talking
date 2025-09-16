@@ -1,11 +1,18 @@
 import { Box, Flex, } from "@chakra-ui/react";
 import MessageItem from "./MessageItem";
+import { useEffect, useRef } from "react";
 
 interface ChatMessageProps {
   messages: { avatarUrl: string; messageText: string }[];
 }
 
 const ChatMessage = ({ messages }: ChatMessageProps) => {
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
   return (
     <Box
       w="100%"
@@ -19,7 +26,7 @@ const ChatMessage = ({ messages }: ChatMessageProps) => {
       overflowY="auto"
     >
       <Flex
-        direction="column-reverse"  // 让最新消息显示在底部
+        direction="column"
         alignItems="flex-start"
         minH="100%"
         gap={2}
@@ -27,6 +34,7 @@ const ChatMessage = ({ messages }: ChatMessageProps) => {
         {messages.map((item, index) => (
           <MessageItem key={index} avatarUrl={item.avatarUrl} messageText={item.messageText} />
         ))}
+        <div ref={messagesEndRef} />
       </Flex>
     </Box>
   );

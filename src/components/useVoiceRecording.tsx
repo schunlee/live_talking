@@ -1,14 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 
 type UseVoiceRecordingProps = {
-  onTranscript: (text: string) => void;
+  onTranscript: (text: string, isFinal?: boolean) => void;
 };
 
 type UseVoiceRecordingReturn = {
   isRecording: boolean;
   startRecording: () => Promise<void>;
-  stopRecording: () => void;
-  getAudioBlob: () => Blob | null;
+  stopRecording: () => Blob | null;
   isSpeechRecognitionSupported: boolean;
 };
 
@@ -23,14 +22,13 @@ const useVoiceRecording = ({
   onTranscript,
 }: UseVoiceRecordingProps): UseVoiceRecordingReturn => {
   const [isRecording, setIsRecording] = useState(false);
-  const [audioChunks, setAudioChunks] = useState<Blob[]>([]);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
   const recognitionRef = useRef<any>(null);
-  const isStoppedRef = useRef(false);
+
   const [isSpeechRecognitionSupported, setIsSpeechRecognitionSupported] =
     useState(false);
 
-  /** 初始化 SpeechRecognition */
   useEffect(() => {
     const SpeechRecognitionClass =
       window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -58,14 +56,8 @@ const useVoiceRecording = ({
         }
       }
 
-      if (interimTranscript) {
-        console.log('中间结果:', interimTranscript);
-        onTranscript(interimTranscript);
-      }
-      if (finalTranscript) {
-        console.log('最终结果:', finalTranscript);
-        onTranscript(finalTranscript);
-      }
+      // if (interimTranscript) onTranscript(interimTranscript, false);
+      if (finalTranscript) onTranscript(finalTranscript, true);
     };
 
     recog.onerror = (event: any) => {
@@ -75,64 +67,53 @@ const useVoiceRecording = ({
     recognitionRef.current = recog;
 
     return () => {
-      // 卸载时清理
       try {
         recog.stop();
       } catch {}
     };
   }, [onTranscript]);
 
-  /** 开始录音 */
   const startRecording = useCallback(async () => {
     if (isRecording) return;
 
-    isStoppedRef.current = false;
-
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioChunksRef.current = [];
 
       const recorder = new MediaRecorder(stream);
       mediaRecorderRef.current = recorder;
-      setAudioChunks([]); // 清空上次缓存
 
       recorder.ondataavailable = (e: BlobEvent) => {
-        if (e.data.size > 0) {
-          setAudioChunks((prev) => [...prev, e.data]);
-        }
+        if (e.data.size > 0) audioChunksRef.current.push(e.data);
       };
 
       recorder.start();
       setIsRecording(true);
 
-      if (isSpeechRecognitionSupported && recognitionRef.current) {
+      if (recognitionRef.current) {
         try {
           recognitionRef.current.start();
         } catch (e) {
-          console.warn('SpeechRecognition start 出错或重复调用:', e);
+          console.warn('SpeechRecognition start 出错:', e);
         }
       }
     } catch (err) {
       console.error('无法访问麦克风:', err);
       alert('无法访问麦克风，请检查浏览器权限设置。');
     }
-  }, [isRecording, isSpeechRecognitionSupported]);
+  }, [isRecording]);
 
-  /** 停止录音 */
   const stopRecording = useCallback(() => {
-    if (!isRecording) return;
-
-    isStoppedRef.current = true;
+    if (!isRecording) return null;
 
     // 停止录音
     if (mediaRecorderRef.current) {
       mediaRecorderRef.current.stop();
-      mediaRecorderRef.current.stream
-        .getTracks()
-        .forEach((track) => track.stop());
+      mediaRecorderRef.current.stream.getTracks().forEach((t) => t.stop());
       mediaRecorderRef.current = null;
     }
 
-    // 停止语音识别
+    // 停止识别
     if (recognitionRef.current) {
       try {
         recognitionRef.current.stop();
@@ -142,19 +123,15 @@ const useVoiceRecording = ({
     }
 
     setIsRecording(false);
-  }, [isRecording]);
 
-  /** 获取录音的 Blob */
-  const getAudioBlob = useCallback((): Blob | null => {
-    if (audioChunks.length === 0) return null;
-    return new Blob(audioChunks, { type: 'audio/wav' });
-  }, [audioChunks]);
+    if (audioChunksRef.current.length === 0) return null;
+    return new Blob(audioChunksRef.current, { type: 'audio/wav' });
+  }, [isRecording]);
 
   return {
     isRecording,
     startRecording,
     stopRecording,
-    getAudioBlob,
     isSpeechRecognitionSupported,
   };
 };

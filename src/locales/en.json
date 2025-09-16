@@ -1,6 +1,6 @@
 {
   "welcome": "👋 Welcome to Anton AI Avatar",
-  "start+btn": "Chat now",
+  "start_btn": "Chat now",
   "start_toolip": "Start the call",
   "language_select": "Select AI Model Language",
   "status_tag": "Status of AI Avatar",
