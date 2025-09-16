@@ -26,13 +26,31 @@ const useWebRTC = ({ language }: UseWebRTCOptions) => {
     peer.addEventListener("track", (evt) => {
       if (evt.track.kind === "video" && videoRef.current) {
         videoRef.current.srcObject = evt.streams[0];
+        console.log("✅ 收到远端视频 track");
       }
       if (evt.track.kind === "audio") {
         setAudioStream(evt.streams[0]); // 暴露音频流
+        console.log("✅ 收到远端音频 track");
       }
     });
 
+    peer.addEventListener("iceconnectionstatechange", () => {
+      console.log("ICE state:", peer.iceConnectionState);
+    });
+    peer.addEventListener("connectionstatechange", () => {
+      console.log("Connection state:", peer.connectionState);
+    });
+
     setPc(peer);
+
+    setInterval(async () => {
+  const stats = await peer.getStats();
+  stats.forEach(report => {
+    if (report.type === "inbound-rtp" && report.kind === "video") {
+      console.log("📊 video packets:", report.packetsReceived, "framesDecoded:", report.framesDecoded);
+    }
+  });
+}, 2000);
 
     try {
       // 生成 offer

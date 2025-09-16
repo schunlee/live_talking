@@ -1,5 +1,5 @@
 {
-  "welcome": "Welcome to Anton AI Avatar",
+  "welcome": "👋 Welcome to Anton AI Avatar",
   "start+btn": "Chat now",
   "start_toolip": "Start the call",
   "language_select": "Select AI Model Language",
@@ -9,6 +9,11 @@
   "stop_btn": "End the call",
   "pause_btn": "Pause the call",
   "record_btn": "Turn on/off the microphone",
-  "waiting_msg": "Loading up your avatar now for a realtime interactive experience.",
-  "waiting_title": "Connecting..."
+  "waiting_msg": "Loading up your avatar now for a realtime interactive experience",
+  "waiting_title": "Connecting...",
+  "chinese": "Chinese",
+  "english": "English",
+  "open_status": "Opening",
+  "pause_status": "Pausing",
+  "close_status": "Closing"
 }

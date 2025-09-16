@@ -45,5 +45,5 @@ export const RemoteAudioVisualizer = ({ audioStream, width = 100, height = 100 }
     };
   }, [audioStream]);
 
-  return <canvas ref={canvasRef} width={width} height={height} className="ml-5"/>;
+  return <canvas ref={canvasRef} width={width} height={height}/>;
 };

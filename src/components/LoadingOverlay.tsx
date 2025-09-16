@@ -1,4 +1,5 @@
 import { Box, Center, Spinner, VStack, Text } from "@chakra-ui/react"
+import { t } from "i18next"
 
 const LoadingOverlay = () => {
   return (
@@ -16,10 +17,10 @@ const LoadingOverlay = () => {
             size="xl"
           />
           <Text fontSize="2xl" fontWeight="bold" color="white">
-            Connecting...
+            {t("waiting_title")}
           </Text>
           <Text fontSize="md" color="whiteAlpha.900" textAlign="center">
-            Loading up your avatar now for a realtime interactive experience.
+            {t("waiting_msg")}
           </Text>
         </VStack>
       </Center>

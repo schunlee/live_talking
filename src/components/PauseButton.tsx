@@ -1,6 +1,7 @@
 import { Button, } from '@chakra-ui/react'
 import { Tooltip } from "@/components/ui/tooltip"
 import { FaPause } from 'react-icons/fa';
+import { t } from 'i18next';
 
 interface PauseButtonProps {
     onClick?: () => void;
@@ -9,7 +10,7 @@ interface PauseButtonProps {
 
 const PauseButton = ({ onClick }: PauseButtonProps) => {
     return (
-        <Tooltip showArrow content="Pause the call">
+        <Tooltip showArrow content={t("pause_btn")}>
             <Button
                 onClick={onClick}
                 h={{ md: "40px", base: "40px" }}

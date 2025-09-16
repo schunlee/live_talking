@@ -1,6 +1,7 @@
 import { Button, } from '@chakra-ui/react'
 import { BsTelephoneX } from 'react-icons/bs'
 import { Tooltip } from "@/components/ui/tooltip"
+import { t } from 'i18next';
 
 interface StopButtonProps {
     onClick?: () => void;
@@ -9,7 +10,7 @@ interface StopButtonProps {
 
 const StopButton = ({ onClick }: StopButtonProps) => {
     return (
-        <Tooltip showArrow content="End the call">
+        <Tooltip showArrow content={t("stop_btn")}>
             <Button
                 onClick={onClick}
                 h={{ md: "40px", base: "40px" }}

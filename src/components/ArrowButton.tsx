@@ -1,4 +1,5 @@
 import { Tooltip } from "@/components/ui/tooltip"
+import { t } from "i18next";
 
 
 interface ArrowButtonProps {
@@ -10,7 +11,7 @@ interface ArrowButtonProps {
 
 const ArrowButton = ({ direction, togglePanel }: ArrowButtonProps) => {
     return (
-        <Tooltip showArrow content="Extend/Fold the ChatBox">
+        <Tooltip showArrow content={t("arrow_btn")}>
             <button
                 onClick={togglePanel}
                 className="

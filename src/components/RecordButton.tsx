@@ -2,6 +2,7 @@ import { Button } from "@chakra-ui/react";
 import { HiOutlineMicrophone } from "react-icons/hi";
 import { PiMicrophoneSlashLight } from "react-icons/pi";
 import { Tooltip } from "@/components/ui/tooltip"
+import { t } from "i18next";
 
 interface RecordButtonProps {
     isPulsing: boolean;
@@ -10,7 +11,7 @@ interface RecordButtonProps {
 
 const RecordButton = ({ isPulsing, handleClick }: RecordButtonProps) => {
     return (
-        <Tooltip showArrow content="Turn on/off the microphone">
+        <Tooltip showArrow content={t("record_btn")}>
             <Button
                 bg="green.500"
                 color="white"

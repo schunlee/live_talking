@@ -2,6 +2,7 @@ import { Icon, Switch } from '@chakra-ui/react'
 import { HiOutlineMicrophone } from 'react-icons/hi'
 import { PiMicrophoneSlashLight } from 'react-icons/pi'
 import { Tooltip } from "@/components/ui/tooltip"
+import { t } from 'i18next';
 
 interface ChatSwitcherProps {
     isOn: boolean;
@@ -20,7 +21,7 @@ const ChatSwitcher = ({ isOn, onToggle }: ChatSwitcherProps) => {
 
             <Switch.Control>
                 <Switch.Thumb />
-                <Tooltip showArrow content="Turn on/off the microphone">
+                <Tooltip showArrow content={t("record_btn")}>
                     <Switch.Indicator fallback={<Icon as={PiMicrophoneSlashLight} color="gray.400" />}>
                         <Icon as={HiOutlineMicrophone} color="white" />
                     </Switch.Indicator>

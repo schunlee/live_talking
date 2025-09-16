@@ -1,6 +1,7 @@
 import { Button } from "@chakra-ui/react"
 import { VscDebugStart } from "react-icons/vsc";
 import { Tooltip } from "@/components/ui/tooltip"
+import { t } from "i18next";
 
 interface StartButtonProps {
   onClick?: () => void;
@@ -9,7 +10,7 @@ interface StartButtonProps {
 
 const StartButton = ({ onClick }: StartButtonProps) => {
   return (
-    <Tooltip showArrow content="Start the call">
+    <Tooltip showArrow content={t("start_toolip")}>
       <Button bg={'blue.500'}
         onClick={onClick}
         variant="solid"
@@ -27,7 +28,7 @@ const StartButton = ({ onClick }: StartButtonProps) => {
         _focus={{
           bg: 'blue.400',
         }}>
-        <VscDebugStart />Chat now</Button></Tooltip>
+        <VscDebugStart />{t("start_btn")}</Button></Tooltip>
   )
 }
 

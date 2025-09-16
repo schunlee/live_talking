@@ -4,6 +4,7 @@ import ChatMessage from './ChatMessage'
 import { useState } from 'react';
 import avatar_client from '@/assets/avatar_client.png'
 import avatar_ai from '@/assets/avatar_ai.png'
+import { t } from 'i18next';
 
 
 
@@ -46,8 +47,8 @@ const ChatBox = ({ sessionId, messages, setMessages, setStatusText }: ChatBoxPro
             const replayMsg = { avatarUrl: avatar_ai, messageText: reply };
             setTimeout(() => {
                 setMessages((prev) => [...prev, replayMsg]);
-            }, 2000)
-            setStatusText("Opening")
+            }, 3000)
+            setStatusText(t("open_status"))
 
         } catch (error) {
             console.error('发送失败:', error);
@@ -76,7 +77,7 @@ const ChatBox = ({ sessionId, messages, setMessages, setStatusText }: ChatBoxPro
             <Flex direction={'column'} h="100%" p={4} justifyContent="flex-end">
                 <ChatMessage messages={messages} />
                 <InputGroup endElement={<AiOutlineSend />} bgColor={"white"} borderRadius="xl" onClick={handleSubmit} onKeyDown={handleKeyDown}>
-                    <Input fontFamily="bold" placeholder="Send me message..." value={inputMsg} onInput={handleInputChange} />
+                    <Input fontFamily="bold" placeholder={t("input_box")} value={inputMsg} onInput={handleInputChange} />
                 </InputGroup>
             </Flex>
         </Box>

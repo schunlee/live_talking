@@ -6,7 +6,6 @@ import bgImg from '/src/assets/bg.jpg';
 import ChatBox from "./components/ChatBox";
 import { useEffect, useState } from "react";
 import StopButton from "./components/StopButton";
-import ChatSwitcher from "./components/ChatSwitcher";
 import LoadingOverlay from "./components/LoadingOverlay";
 import useWebRTC from "./components/useWebRTC";
 import { useToast } from "@chakra-ui/toast";
@@ -16,14 +15,16 @@ import avatar_ai from '@/assets/avatar_ai.png'
 import PauseButton from "./components/PauseButton";
 import ArrowButton from "./components/ArrowButton";
 import StatusTag from "./components/StatusTag";
-import { LiveAudioVisualizer } from "react-audio-visualize";
 import { RemoteAudioVisualizer } from "./components/RemoteAudioVisualizer";
 import RecordButton from "./components/RecordButton";
+import { useTranslation } from "react-i18next";
+import "./locales";
 
 
 
 
 function App() {
+  const { t } = useTranslation();
   const { open, onToggle } = useDisclosure() // 控制 ChatBox 的显示与隐藏
   const [showChatbox, setShowChatbox] = useState(true); // 控制按钮图标的切换
   const [showMicroPhone, setShowMicroPhone] = useState(true); // 控制麦克风组件的显示与隐藏
@@ -33,7 +34,7 @@ function App() {
   const [isOn, setIsOn] = useState(false); // 控制开关状态
   const [messages, setMessages] = useState<{ avatarUrl: string; messageText: string }[]>([]); // 聊天消息列表
   const [lan, setLan] = useState("zh");
-  const [statusText, setStatusText] = useState('Closing');
+  const [statusText, setStatusText] = useState(t("close_status"));
 
   const { videoRef, start, stop, sessionId, audioStream } = useWebRTC({ language: lan });
   const toast = useToast()
@@ -64,8 +65,8 @@ function App() {
         const replayMsg = { avatarUrl: avatar_ai, messageText: reply };
         setTimeout(() => {
           setMessages((prev) => [...prev, replayMsg]);
-        }, 2000)
-        setStatusText("Opening");
+        }, 3000)
+        setStatusText(t("open_status"));
       } catch (error) {
         console.error('发送失败:', error);
       }
@@ -124,7 +125,7 @@ function App() {
     });
     let data = await resp.json();
     console.log(data);
-    setStatusText("Pausing")
+    setStatusText(t("pause_status"))
   }
 
   const toggleMicroPhone = async () => {
@@ -139,7 +140,7 @@ function App() {
         notify("Failed to connect to the server. Please check your network or try again later.", "error");
         return; // 退回，不执行后续
       }
-      setStatusText("Opening");
+      setStatusText(t("open_status"));
       handleArrowBtnVisibility(true);
     } else {
       handleArrowBtnVisibility(false);
@@ -147,7 +148,7 @@ function App() {
       if (open) {
         onToggle(); // 关闭聊天框
       }
-      setStatusText("Closing");
+      setStatusText(t("close_status"));
       setShowChatbox(true); // 重置按钮状态
       setShowStaticVideo(true); // 切换回静态视频
     }
@@ -226,7 +227,15 @@ function App() {
                 justifyContent="center"  // 垂直居中
                 height="100%">
                 <StatusTag content={statusText} />
-                <Box mt={5} ml={5}><RemoteAudioVisualizer audioStream={audioStream} width={80} height={40} /></Box>
+                <Box
+                  mt={5}
+                  ml={0}
+                  // border={audioStream ? "1px dashed #4F46E5" : "1px solid transparent"}
+                  borderRadius="md"
+                // p={1}
+                >
+                  <RemoteAudioVisualizer audioStream={audioStream} width={50} height={30} />
+                </Box>
 
               </Flex>
             </Center>
@@ -248,7 +257,7 @@ function App() {
             boxShadow="lg" >
             <Flex gap="1" direction="column">
               <Center h={{ md: "70px", base: "50px" }} fontSize={{ md: "24px", base: "14px" }} fontWeight="bold">
-                👋 Welcome to Anton AI Avatar
+                {t("welcome")}
               </Center>
               <Flex align="center" gap="10" justify="space-evenly" direction={{ base: "column", md: "row" }}>
                 <LanSelector value={lan} onChange={setLan} />
@@ -264,7 +273,7 @@ function App() {
           >
             <Flex alignItems="center" >
               {/* <ChatSwitcher isOn={isOn} onToggle={voiceRecord} /> */}
-              <RecordButton isPulsing={isOn} handleClick={voiceRecord}/>
+              <RecordButton isPulsing={isOn} handleClick={voiceRecord} />
               <PauseButton onClick={pauseMicroPhone} />
             </Flex>
             <Box ><StopButton onClick={toggleMicroPhone} /></Box>
