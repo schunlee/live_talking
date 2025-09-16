@@ -241,7 +241,9 @@ function App() {
     } else {
       handleArrowBtnVisibility(false);
       stop();
-      voiceRecord();
+      setWelcome(false);
+      SpeechRecognition.stopListening();
+      setIsOn(false);
       if (open) onToggle();
       setStatusText(false);
       setShowChatbox(true);
