@@ -154,12 +154,18 @@ function App() {
     startRecording(); // react-media-recorder 的方法
   };
 
-  const stopRecordingHandler = async () => {
-    stopRecording(); // react-media-recorder 的方法
-    if (mediaBlobUrl) {
-      await uploadAudio(); // 可选上传
-    }
+  // 停止录音，但不立即上传
+  const stopRecordingHandler = () => {
+    stopRecording(); // 触发 react-media-recorder 停止录音
   };
+
+  // 监听 mediaBlobUrl，一旦录音生成完成就上传
+  useEffect(() => {
+    if (mediaBlobUrl) {
+      console.log("录音生成完成，开始上传:", mediaBlobUrl);
+      uploadAudio(); // 这里调用你的上传函数
+    }
+  }, [mediaBlobUrl]);
 
 
   const notify = (message: string, status: "success" | "error" | "info" | "warning" = "info") => {
@@ -366,7 +372,7 @@ function App() {
         animationDuration="moderate"
       >
         <Center>
-          <ChatBox sessionId={sessionId} messages={messages} setMessages={setMessages} setStatusText={setStatusText} inputDisabled={inputDisabled}/>
+          <ChatBox sessionId={sessionId} messages={messages} setMessages={setMessages} setStatusText={setStatusText} inputDisabled={inputDisabled} />
         </Center>
       </Presence>
     </Flex>
