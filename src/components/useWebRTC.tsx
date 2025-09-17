@@ -72,6 +72,7 @@ const useWebRTC = ({ language, onSessionId }: UseWebRTCOptions) => {
       return true;
     } catch (err) {
       console.error("WebRTC negotiation failed:", err);
+      alert(`WebRTC negotiation failed: ${err}`);
       return false;
     }
   };

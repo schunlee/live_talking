@@ -25,6 +25,7 @@
     "react-dom": "^19.1.1",
     "react-i18next": "^15.7.3",
     "react-icons": "^5.5.0",
+    "react-media-recorder": "^1.7.2",
     "react-speech-recognition": "^4.0.1",
     "react-spinners": "^0.17.0"
   },

@@ -5,14 +5,17 @@ import { Tooltip } from "@/components/ui/tooltip"
 import { t } from "i18next";
 
 interface RecordButtonProps {
+    btnDisabled: boolean;
     isPulsing: boolean;
-    handleClick: () => void;
+    handleMouseDown: () => void
+    handleTouchStart: () => void;
 }
 
-const RecordButton = ({ isPulsing, handleClick }: RecordButtonProps) => {
+const RecordButton = ({ isPulsing, btnDisabled, handleTouchStart, handleMouseDown }: RecordButtonProps) => {
     return (
         <Tooltip showArrow content={t("record_btn")}>
             <Button
+                disabled={btnDisabled}
                 bg="green.500"
                 color="white"
                 fontWeight="bold"
@@ -28,7 +31,8 @@ const RecordButton = ({ isPulsing, handleClick }: RecordButtonProps) => {
                 // animationDuration={isPulsing ? "1s" : undefined}
                 // animationTimingFunction={isPulsing ? "ease-in-out" : undefined}
                 // animationIterationCount={isPulsing ? "infinite" : undefined}
-                onClick={handleClick}
+                onMouseDown={handleMouseDown}
+                onTouchStart={handleTouchStart}
             >
                 {isPulsing ? <HiOutlineMicrophone /> : <PiMicrophoneSlashLight />}
             </Button>

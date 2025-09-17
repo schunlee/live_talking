@@ -4,12 +4,11 @@ import LanSelector from "./components/LanSelector";
 import StaticVideo from "./components/StaticVideo";
 import bgImg from '/src/assets/bg.jpg';
 import ChatBox from "./components/ChatBox";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import StopButton from "./components/StopButton";
 import LoadingOverlay from "./components/LoadingOverlay";
 import useWebRTC from "./components/useWebRTC";
 import { useToast } from "@chakra-ui/toast";
-import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 import avatar_client from '@/assets/avatar_client.png';
 import avatar_ai from '@/assets/avatar_ai.png';
 import PauseButton from "./components/PauseButton";
@@ -19,6 +18,7 @@ import RecordButton from "./components/RecordButton";
 import { useTranslation } from "react-i18next";
 import "./locales";
 import AudioWaveButton from "./components/AudioWaveButton";
+import { useAudioRecorder } from "./components/useAudioRecorder";
 
 function App() {
   const { t } = useTranslation();
@@ -28,7 +28,6 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [showArrowBtn, setShowArrowBtn] = useState(false);
   const [showStaticVideo, setShowStaticVideo] = useState(true);
-  const [isOn, setIsOn] = useState(false);
   const [messages, setMessages] = useState<{ avatarUrl: string; messageText: string }[]>([]);
   const [lan, setLan] = useState("zh");
   const [statusText, setStatusText] = useState(false);
@@ -36,7 +35,9 @@ function App() {
   const [silentCount, setSilentCount] = useState(0);   // 连续静音计数
   const silentThreshold = 4;
   const welcomeMsg = "请介绍一下你自己，欢迎用户使用安东数字人平台，字数不要超过200字";
-  const [welcome, setWelcome] = useState(false);                           // 连续静音阈值
+  const [welcome, setWelcome] = useState(false);
+  const [btnDisabled, setBtnDisabled] = useState(false);
+  const [inputDisabled, setInputDisabled] = useState(false);
 
 
   const { videoRef, start, stop, sessionId, audioStream } = useWebRTC({ language: lan });
@@ -71,10 +72,13 @@ function App() {
           // 数字人正在说话
           setIsSpeaking(true);
           setSilentCount(0);
+          setBtnDisabled(true);
+          setInputDisabled(true);
         } else {
           // 数字人没说话
           setSilentCount(prev => prev + 1);
-
+          setBtnDisabled(false);
+          setInputDisabled(false);
           if (silentCount + 1 > silentThreshold) {
             setIsSpeaking(false);
           }
@@ -99,16 +103,16 @@ function App() {
     };
   }, [sessionId, silentCount]);
 
-  const {
-    transcript,
-    listening,
-    resetTranscript,
-    browserSupportsSpeechRecognition
-  } = useSpeechRecognition();
+  // const {
+  //   transcript,
+  //   listening,
+  //   resetTranscript,
+  //   browserSupportsSpeechRecognition
+  // } = useSpeechRecognition();
 
-  const stopTimeout = useRef<number | null>(null);
+  // const stopTimeout = useRef<number | null>(null);
 
-  // 🔹 发送语音识别结果到聊天框和后台
+  // // 🔹 发送语音识别结果到聊天框和后台
   const handleSendTranscript = async (text: string) => {
     if (!text.trim()) return;
 
@@ -142,43 +146,21 @@ function App() {
     }
   };
 
-  // 🔹 点击录音按钮，开始/停止识别
-  const voiceRecord = () => {
-    if (!browserSupportsSpeechRecognition) {
-      toast({
-        title: "浏览器不支持语音识别",
-        status: "warning",
-        duration: 3000,
-        isClosable: true,
-      });
-      return;
-    }
+  const { status, startRecording, stopRecording, transcript, uploadAudio, mediaBlobUrl, reset } = useAudioRecorder();
 
-    if (!listening) {
-      SpeechRecognition.startListening({ continuous: true, language: lan });
-      setIsOn(true);
-    } else {
-      SpeechRecognition.stopListening();
-      setIsOn(false);
-      if (transcript.trim()) {
-        handleSendTranscript(transcript);
-        resetTranscript();
-      }
-      if (stopTimeout.current) clearTimeout(stopTimeout.current);
+
+
+  const startRecordingHandler = () => {
+    startRecording(); // react-media-recorder 的方法
+  };
+
+  const stopRecordingHandler = async () => {
+    stopRecording(); // react-media-recorder 的方法
+    if (mediaBlobUrl) {
+      await uploadAudio(); // 可选上传
     }
   };
 
-  // 🔹 监控 transcript，间断 500ms 就发送
-  useEffect(() => {
-    if (!listening || !transcript.trim()) return;
-
-    if (stopTimeout.current) clearTimeout(stopTimeout.current);
-
-    stopTimeout.current = setTimeout(() => {
-      handleSendTranscript(transcript);
-      resetTranscript();
-    }, 500); // 500ms 可调整
-  }, [transcript]);
 
   const notify = (message: string, status: "success" | "error" | "info" | "warning" = "info") => {
     toast({
@@ -198,6 +180,14 @@ function App() {
   const handleArrowBtnVisibility = (visible: boolean) => {
     setShowArrowBtn(visible);
   };
+
+  useEffect(() => {
+    if (transcript) {
+      handleSendTranscript(transcript);
+      reset();
+    }
+
+  }, [transcript])
 
   useEffect(() => {
     const videoEl = videoRef.current;
@@ -242,8 +232,7 @@ function App() {
       handleArrowBtnVisibility(false);
       stop();
       setWelcome(false);
-      SpeechRecognition.stopListening();
-      setIsOn(false);
+      stopRecording();
       if (open) onToggle();
       setStatusText(false);
       setShowChatbox(true);
@@ -341,10 +330,26 @@ function App() {
           )}
           {!showMicroPhone && (
             <Flex align="center" direction={{ base: "column", md: "row" }} justify="space-evenly" width="100%">
-              <Flex>
-                {!listening && <RecordButton isPulsing={isOn} handleClick={voiceRecord} />}
-                {listening && <AudioWaveButton handleClick={voiceRecord} />}
+              <Flex align="center" gap={2}>
+                {status != "recording" && (
+                  <RecordButton
+                    btnDisabled={btnDisabled}
+                    isPulsing={false}
+                    handleMouseDown={startRecordingHandler}
+                    handleTouchStart={startRecordingHandler}
+                  />
+                )}
+
+                {status === "recording" && (
+                  <AudioWaveButton
+                    btnDisabled={btnDisabled}
+                    handleMouseUp={stopRecordingHandler}
+                    handleMouseLeave={stopRecordingHandler} // 鼠标移出也停止
+                    handleTouchEnd={stopRecordingHandler}
+                  />
+                )}
               </Flex>
+              <Box>{transcript}</Box>
               <Flex alignItems="center" gap={5}>
                 <Box><StopButton onClick={toggleMicroPhone} /></Box>
                 <PauseButton onClick={pauseMicroPhone} />
@@ -361,7 +366,7 @@ function App() {
         animationDuration="moderate"
       >
         <Center>
-          <ChatBox sessionId={sessionId} messages={messages} setMessages={setMessages} setStatusText={setStatusText} />
+          <ChatBox sessionId={sessionId} messages={messages} setMessages={setMessages} setStatusText={setStatusText} inputDisabled={inputDisabled}/>
         </Center>
       </Presence>
     </Flex>
