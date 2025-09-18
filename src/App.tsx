@@ -31,7 +31,6 @@ function App() {
   const [showStaticVideo, setShowStaticVideo] = useState(true);
   const [messages, setMessages] = useState<{ avatarUrl: string; messageText: string }[]>([]);
   const [lan, setLan] = useState("zh");
-  const [statusText, setStatusText] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false); // 数字人是否在说话
   const [silentCount, setSilentCount] = useState(0);   // 连续静音计数
   const silentThreshold = 4;
@@ -41,7 +40,7 @@ function App() {
   const [inputDisabled, setInputDisabled] = useState(false);
 
 
-  const { videoRef, start, stop, sessionId, audioStream } = useWebRTC({ language: lan });
+  const { videoRef, start, stop, sessionId} = useWebRTC({ language: lan });
   const toast = useToast();
   const inputRef = useRef<HTMLInputElement>(null); // 初始化为 null
 
@@ -141,7 +140,6 @@ function App() {
 
       const replyMsg = { avatarUrl: avatar_ai, messageText: data.msg };
       setMessages(prev => [...prev, replyMsg]);
-      setStatusText(true);
     } catch (err) {
       console.error('发送失败', err);
       toast({
@@ -228,7 +226,6 @@ function App() {
     });
     const data = await resp.json();
     console.log(data);
-    setStatusText(true);
   };
 
   const toggleMicroPhone = async () => {
@@ -240,7 +237,6 @@ function App() {
         notify("Failed to connect to the server. Please check your network or try again later.", "error");
         return;
       }
-      setStatusText(true);
       handleArrowBtnVisibility(true);
     } else {
       handleArrowBtnVisibility(false);
@@ -248,7 +244,6 @@ function App() {
       setWelcome(false);
       stopRecording();
       if (open) onToggle();
-      setStatusText(false);
       setShowChatbox(true);
       setShowStaticVideo(true);
     }
@@ -310,7 +305,7 @@ function App() {
     >
         <Image marginX={4}
           htmlWidth="160px"
-          mixBlendMode="multiply"   // 或 "overlay", "darken"
+          mixBlendMode="multiply"
           opacity={1}
           src={logo} />
       </Flex>
@@ -399,7 +394,7 @@ function App() {
         animationDuration="moderate"
       >
         <Center>
-          <ChatBox sessionId={sessionId} messages={messages} setMessages={setMessages} setStatusText={setStatusText} inputDisabled={inputDisabled} inputRef={inputRef} />
+          <ChatBox sessionId={sessionId} messages={messages} setMessages={setMessages} inputDisabled={inputDisabled} inputRef={inputRef} />
         </Center>
       </Presence>
     </Flex>

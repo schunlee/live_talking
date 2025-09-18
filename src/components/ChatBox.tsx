@@ -13,12 +13,11 @@ interface ChatBoxProps {
     sessionId?: string | null;
     messages: { avatarUrl: string; messageText: string }[];
     setMessages: React.Dispatch<React.SetStateAction<{ avatarUrl: string; messageText: string }[]>>;
-    setStatusText: React.Dispatch<React.SetStateAction<boolean>>;
     inputRef: React.RefObject<HTMLInputElement | null>;
 }
 
 
-const ChatBox = ({ inputRef, inputDisabled, sessionId, messages, setMessages, setStatusText }: ChatBoxProps) => {
+const ChatBox = ({ inputRef, inputDisabled, sessionId, messages, setMessages }: ChatBoxProps) => {
     const sid = sessionId ? parseInt(sessionId) : 0;
     const [inputMsg, setInputMsg] = useState("");
 
@@ -49,7 +48,6 @@ const ChatBox = ({ inputRef, inputDisabled, sessionId, messages, setMessages, se
             setTimeout(() => {
                 setMessages((prev) => [...prev, replayMsg]);
             }, 3000)
-            setStatusText(true)
 
         } catch (error) {
             console.error('发送失败:', error);

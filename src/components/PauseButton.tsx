@@ -1,6 +1,5 @@
 import { Button, } from '@chakra-ui/react'
 import { Tooltip } from "@/components/ui/tooltip"
-import { FaPause } from 'react-icons/fa';
 import { t } from 'i18next';
 import { VscDebugPause, VscDebugStart } from 'react-icons/vsc';
 
