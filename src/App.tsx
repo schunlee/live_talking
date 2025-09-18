@@ -4,7 +4,7 @@ import LanSelector from "./components/LanSelector";
 import StaticVideo from "./components/StaticVideo";
 import bgImg from '/src/assets/bg.jpg';
 import ChatBox from "./components/ChatBox";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import StopButton from "./components/StopButton";
 import LoadingOverlay from "./components/LoadingOverlay";
 import useWebRTC from "./components/useWebRTC";
@@ -34,7 +34,7 @@ function App() {
   const [isSpeaking, setIsSpeaking] = useState(false); // 数字人是否在说话
   const [silentCount, setSilentCount] = useState(0);   // 连续静音计数
   const silentThreshold = 4;
-  const welcomeMsg = "请介绍一下你自己，欢迎用户使用安东数字人平台，字数不要超过200字";
+  const welcomeMsg = "您好，我是安东智能对话数字员工，很高兴为你服务";
   const [welcome, setWelcome] = useState(false);
   const [btnDisabled, setBtnDisabled] = useState(false);
   const [inputDisabled, setInputDisabled] = useState(false);
@@ -42,11 +42,14 @@ function App() {
 
   const { videoRef, start, stop, sessionId, audioStream } = useWebRTC({ language: lan });
   const toast = useToast();
+  const inputRef = useRef<HTMLInputElement>(null); // 初始化为 null
+
 
 
   useEffect(() => {
-    if (!isSpeaking) {
+    if (!isSpeaking && inputRef.current) {
       setShowStaticVideo(true);
+      inputRef.current.focus(); // 使输入框获得焦点
     } else {
       setShowStaticVideo(false);
     }
@@ -55,7 +58,7 @@ function App() {
   const checkSpeaking = async () => {
     if (!sessionId) return;
     if (!welcome) {
-      handleSendTranscript(welcomeMsg);
+      handleSendTranscript(welcomeMsg, "echo");
       setWelcome(true);
     }
 
@@ -113,10 +116,10 @@ function App() {
   // const stopTimeout = useRef<number | null>(null);
 
   // // 🔹 发送语音识别结果到聊天框和后台
-  const handleSendTranscript = async (text: string) => {
+  const handleSendTranscript = async (text: string, typeStr: string = "chat") => {
     if (!text.trim()) return;
 
-    const newMessage = { avatarUrl: avatar_client, messageText: text };
+    const newMessage = { avatarUrl: typeStr === "chat" ? avatar_client : avatar_ai, messageText: text };
     setMessages(prev => [...prev, newMessage]);
 
     try {
@@ -125,12 +128,16 @@ function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           text,
-          type: 'chat',
+          type: typeStr,
           interrupt: true,
           sessionid: sessionId,
         }),
       });
       const data = await resp.json();
+      if(typeStr === "echo"){
+        return
+      }
+
       const replyMsg = { avatarUrl: avatar_ai, messageText: data.msg };
       setMessages(prev => [...prev, replyMsg]);
       setStatusText(true);
@@ -372,7 +379,7 @@ function App() {
         animationDuration="moderate"
       >
         <Center>
-          <ChatBox sessionId={sessionId} messages={messages} setMessages={setMessages} setStatusText={setStatusText} inputDisabled={inputDisabled} />
+          <ChatBox sessionId={sessionId} messages={messages} setMessages={setMessages} setStatusText={setStatusText} inputDisabled={inputDisabled} inputRef={inputRef}/>
         </Center>
       </Presence>
     </Flex>

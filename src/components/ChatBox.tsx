@@ -14,11 +14,11 @@ interface ChatBoxProps {
     messages: { avatarUrl: string; messageText: string }[];
     setMessages: React.Dispatch<React.SetStateAction<{ avatarUrl: string; messageText: string }[]>>;
     setStatusText: React.Dispatch<React.SetStateAction<boolean>>;
-
+    inputRef: React.RefObject<HTMLInputElement | null>;
 }
 
 
-const ChatBox = ({ inputDisabled, sessionId, messages, setMessages, setStatusText }: ChatBoxProps) => {
+const ChatBox = ({ inputRef, inputDisabled, sessionId, messages, setMessages, setStatusText }: ChatBoxProps) => {
     const sid = sessionId ? parseInt(sessionId) : 0;
     const [inputMsg, setInputMsg] = useState("");
 
@@ -77,9 +77,9 @@ const ChatBox = ({ inputDisabled, sessionId, messages, setMessages, setStatusTex
             bg={"blue.100"}
             borderRadius="2xl">
             <Flex direction={'column'} h="100%" p={4} justifyContent="flex-end">
-                <ChatMessage messages={messages} />
+                <ChatMessage messages={messages}/>
                 <InputGroup endElement={<AiOutlineSend />} bgColor={"white"} borderRadius="xl" onClick={handleSubmit} onKeyDown={handleKeyDown}>
-                    <Input fontFamily="bold" style={{ height: "60px" }} placeholder={t("input_box")} value={inputMsg} onInput={handleInputChange} disabled={inputDisabled} />
+                    <Input ref={inputRef} fontFamily="bold" style={{ height: "60px" }} placeholder={t("input_box")} value={inputMsg} onInput={handleInputChange} disabled={inputDisabled} />
                 </InputGroup>
             </Flex>
         </Box>

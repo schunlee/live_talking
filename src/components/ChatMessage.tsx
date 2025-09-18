@@ -6,7 +6,7 @@ interface ChatMessageProps {
   messages: { avatarUrl: string; messageText: string }[];
 }
 
-const ChatMessage = ({ messages }: ChatMessageProps) => {
+const ChatMessage = ({ messages}: ChatMessageProps) => {
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -32,7 +32,7 @@ const ChatMessage = ({ messages }: ChatMessageProps) => {
         gap={2}
       >
         {messages.map((item, index) => (
-          <MessageItem key={index} avatarUrl={item.avatarUrl} messageText={item.messageText} />
+          <MessageItem key={index} avatarUrl={item.avatarUrl} messageText={item.messageText}/>
         ))}
         <div ref={messagesEndRef} />
       </Flex>
