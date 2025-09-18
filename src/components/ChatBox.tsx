@@ -5,6 +5,7 @@ import avatar_client from '@/assets/avatar_client.png'
 import avatar_ai from '@/assets/avatar_ai.png'
 import { t } from 'i18next';
 import { useState } from 'react'
+import notify from '@/notify'
 
 
 
@@ -50,6 +51,7 @@ const ChatBox = ({ inputRef, inputDisabled, sessionId, messages, setMessages }: 
             }, 3000)
 
         } catch (error) {
+            notify(t("message_error"), "error");
             console.error('发送失败:', error);
         }
     }
