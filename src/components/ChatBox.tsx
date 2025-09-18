@@ -12,8 +12,8 @@ import notify from '@/notify'
 interface ChatBoxProps {
     inputDisabled: boolean;
     sessionId?: string | null;
-    messages: { avatarUrl: string; messageText: string }[];
-    setMessages: React.Dispatch<React.SetStateAction<{ avatarUrl: string; messageText: string }[]>>;
+    messages: { avatarUrl: string; messageText: string, sender: "ai"| "user" }[];
+    setMessages: React.Dispatch<React.SetStateAction<{ avatarUrl: string; messageText: string, sender: "ai"| "user" }[]>>;
     inputRef: React.RefObject<HTMLInputElement | null>;
 }
 
@@ -24,7 +24,7 @@ const ChatBox = ({ inputRef, inputDisabled, sessionId, messages, setMessages }: 
 
     const handleSubmit = async () => {
         if (!inputMsg) return; // 如果输入为空，直接返回
-        const newMessage = { avatarUrl: avatar_client, messageText: inputMsg };
+        const newMessage = { avatarUrl: avatar_client, messageText: inputMsg, sender: ("user") as "ai"|"user" };
         setMessages((prev) => [...prev, newMessage]);
         setInputMsg("")
 
@@ -45,7 +45,7 @@ const ChatBox = ({ inputRef, inputDisabled, sessionId, messages, setMessages }: 
             });
             let data = await resp.json();
             const reply = data.msg;
-            const replayMsg = { avatarUrl: avatar_ai, messageText: reply };
+            const replayMsg = { avatarUrl: avatar_ai, messageText: reply, sender: "ai" as "ai"| "user" };
             setTimeout(() => {
                 setMessages((prev) => [...prev, replayMsg]);
             }, 3000)

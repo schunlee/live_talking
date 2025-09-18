@@ -29,7 +29,7 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [showArrowBtn, setShowArrowBtn] = useState(false);
   const [showStaticVideo, setShowStaticVideo] = useState(true);
-  const [messages, setMessages] = useState<{ avatarUrl: string; messageText: string }[]>([]);
+  const [messages, setMessages] = useState<{ avatarUrl: string, messageText: string, sender: "ai"| "user" }[]>([]);
   const [lan, setLan] = useState("zh");
   const [isSpeaking, setIsSpeaking] = useState(false); // 数字人是否在说话
   const [silentCount, setSilentCount] = useState(0);   // 连续静音计数
@@ -54,12 +54,15 @@ function App() {
     }
   }, [isSpeaking])
 
+  useEffect(() => {
+  if (sessionId && !welcome) {
+    handleSendTranscript(welcomeMsg, "echo");
+    setWelcome(true);
+  }
+}, [sessionId, welcome]);
+
   const checkSpeaking = async () => {
     if (!sessionId) return;
-    if (!welcome) {
-      handleSendTranscript(welcomeMsg, "echo");
-      setWelcome(true);
-    }
 
     try {
       const resp = await fetch("/is_speaking", {
@@ -118,7 +121,7 @@ function App() {
   const handleSendTranscript = async (text: string, typeStr: string = "chat") => {
     if (!text.trim()) return;
 
-    const newMessage = { avatarUrl: typeStr === "chat" ? avatar_client : avatar_ai, messageText: text };
+    const newMessage = { avatarUrl: typeStr === "chat" ? avatar_client : avatar_ai, messageText: text, sender: (typeStr === "chat" ? "user": "ai") as "user" | "ai" };
     setMessages(prev => [...prev, newMessage]);
 
     try {
@@ -137,7 +140,7 @@ function App() {
         return
       }
 
-      const replyMsg = { avatarUrl: avatar_ai, messageText: data.msg };
+      const replyMsg = { avatarUrl: avatar_ai, messageText: data.msg  as string, sender: ("ai") as "user" | "ai" };
       setMessages(prev => [...prev, replyMsg]);
     } catch (err) {
       notify(t("message_error"), "error");

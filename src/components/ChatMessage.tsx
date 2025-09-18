@@ -3,7 +3,7 @@ import MessageItem from "./MessageItem";
 import { useEffect, useRef } from "react";
 
 interface ChatMessageProps {
-  messages: { avatarUrl: string; messageText: string }[];
+  messages: { avatarUrl: string; messageText: string, sender: "ai"| "user" }[];
 }
 
 const ChatMessage = ({ messages}: ChatMessageProps) => {
@@ -32,7 +32,7 @@ const ChatMessage = ({ messages}: ChatMessageProps) => {
         gap={2}
       >
         {messages.map((item, index) => (
-          <MessageItem key={index} avatarUrl={item.avatarUrl} messageText={item.messageText}/>
+          <MessageItem key={index} avatarUrl={item.avatarUrl} messageText={item.messageText} sender={item.sender}/>
         ))}
         <div ref={messagesEndRef} />
       </Flex>
