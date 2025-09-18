@@ -339,7 +339,6 @@ function App() {
             </Center>
           </Flex>
         </Center>
-
         <Flex
           position="relative"
           zIndex={1}
