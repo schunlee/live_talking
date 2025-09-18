@@ -16,5 +16,6 @@
   "english": "英文",
   "open_status": "会话进行中",
   "pause_status": "会话暂停",
-  "close_status": "会话结束"
+  "close_status": "会话结束",
+  "title": "安东数字人平台"
 }

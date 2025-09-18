@@ -1,4 +1,4 @@
-import { Box, Flex, Center, useDisclosure, Presence } from "@chakra-ui/react";
+import { Box, Flex, Center, useDisclosure, Presence, Image } from "@chakra-ui/react";
 import StartButton from "./components/StartButton";
 import LanSelector from "./components/LanSelector";
 import StaticVideo from "./components/StaticVideo";
@@ -19,6 +19,7 @@ import { useTranslation } from "react-i18next";
 import "./locales";
 import AudioWaveButton from "./components/AudioWaveButton";
 import { useAudioRecorder } from "./components/useAudioRecorder";
+import logo from "@/assets/logo.png"
 
 function App() {
   const { t } = useTranslation();
@@ -134,7 +135,7 @@ function App() {
         }),
       });
       const data = await resp.json();
-      if(typeStr === "echo"){
+      if (typeStr === "echo") {
         return
       }
 
@@ -265,7 +266,24 @@ function App() {
       direction={{ base: "column", md: "row" }}
       pl={10}
       pr={10}
+    > <Flex
+      position="absolute"
+      top={5}
+      pl={10}
+      w="95%"
+      h="50px"
+      // bg="rgba(255,255,255,0.55)"
+      // backdropFilter="blur(6px)" boxShadow="lg"
+      color="white"
+      align="center"
+      justify="center"
+      alignItems={"center"}
+      fontSize="2xl"
+      fontWeight="bold"
+      zIndex={3}   // 保证在视频之上
     >
+        {t("title")}
+      </Flex>
       <Box
         position="relative"
         h={{ md: "80vh", base: "100vh" }}
@@ -274,6 +292,29 @@ function App() {
         borderRadius="2xl"
         overflow="hidden"
       >
+        <Flex
+      position="absolute"
+      top={5}
+      pl={10}
+      w="95%"
+      h="50px"
+      // bg="rgba(255,255,255,0.55)"
+      // backdropFilter="blur(6px)" boxShadow="lg"
+      color="white"
+      align="center"
+      justify="flex-start"
+      alignItems={"center"}
+      fontSize="xl"
+      fontWeight="bold"
+      zIndex={3}   // 保证在视频之上
+    >
+        <Image marginX={4}
+          htmlWidth="160px"
+          mixBlendMode="multiply"   // 或 "overlay", "darken"
+          opacity={1}
+          src={logo} />
+      </Flex>
+
         <Center>
           <Box position="absolute" top={0} left={0} w="100%" h="100%" zIndex={0} display={showStaticVideo ? "none" : "block"}>
             <StaticVideo ref={videoRef} useWebRTCStream />
@@ -379,7 +420,7 @@ function App() {
         animationDuration="moderate"
       >
         <Center>
-          <ChatBox sessionId={sessionId} messages={messages} setMessages={setMessages} setStatusText={setStatusText} inputDisabled={inputDisabled} inputRef={inputRef}/>
+          <ChatBox sessionId={sessionId} messages={messages} setMessages={setMessages} setStatusText={setStatusText} inputDisabled={inputDisabled} inputRef={inputRef} />
         </Center>
       </Presence>
     </Flex>
