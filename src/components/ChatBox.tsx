@@ -79,7 +79,7 @@ const ChatBox = ({ inputDisabled, sessionId, messages, setMessages, setStatusTex
             <Flex direction={'column'} h="100%" p={4} justifyContent="flex-end">
                 <ChatMessage messages={messages} />
                 <InputGroup endElement={<AiOutlineSend />} bgColor={"white"} borderRadius="xl" onClick={handleSubmit} onKeyDown={handleKeyDown}>
-                    <Input fontFamily="bold" placeholder={t("input_box")} value={inputMsg} onInput={handleInputChange} disabled={inputDisabled} />
+                    <Input fontFamily="bold" style={{ height: "60px" }} placeholder={t("input_box")} value={inputMsg} onInput={handleInputChange} disabled={inputDisabled} />
                 </InputGroup>
             </Flex>
         </Box>
