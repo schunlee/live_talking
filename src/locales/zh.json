@@ -17,5 +17,8 @@
   "open_status": "会话进行中",
   "pause_status": "会话暂停",
   "close_status": "会话结束",
-  "title": "安东数字人平台"
+  "title": "安东数字人平台",
+  "message_error": "消息发送失败",
+  "connect_error": "连接服务失败，请检查网络后重试",
+  "interrupt_msg": "机器人语音中断中"
 }

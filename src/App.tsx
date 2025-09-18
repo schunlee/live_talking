@@ -19,7 +19,7 @@ import "./locales";
 import AudioWaveButton from "./components/AudioWaveButton";
 import { useAudioRecorder } from "./components/useAudioRecorder";
 import logo from "@/assets/logo.png"
-import { toaster } from "./components/ui/toaster";
+import notify from "./notify";
 
 function App() {
   const { t } = useTranslation();
@@ -140,7 +140,7 @@ function App() {
       const replyMsg = { avatarUrl: avatar_ai, messageText: data.msg };
       setMessages(prev => [...prev, replyMsg]);
     } catch (err) {
-      notify("消息发送失败", "error");
+      notify(t("message_error"), "error");
     }
   };
 
@@ -164,15 +164,6 @@ function App() {
       uploadAudio(); // 这里调用你的上传函数
     }
   }, [mediaBlobUrl]);
-
-
-  const notify = (message: string, status: "success" | "error" | "info" | "warning" = "info") => {
-    toaster.create({
-          description: message,
-          type: status,
-          closable: true,
-        });
-  };
 
   const handleChatboxClick = () => {
     setShowChatbox(!showChatbox);
@@ -215,6 +206,7 @@ function App() {
       body: JSON.stringify({ sessionid: sessionId }),
     });
     const data = await resp.json();
+    notify(t("interrupt_msg"), "info");
     console.log(data);
   };
 
@@ -224,7 +216,7 @@ function App() {
       const status = await start();
       if (!status) {
         setLoading(false);
-        notify("Failed to connect to the server. Please check your network or try again later.", "error");
+        notify(t("connect_error"), "error");
         return;
       }
       handleArrowBtnVisibility(true);

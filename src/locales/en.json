@@ -17,5 +17,8 @@
   "open_status": "Opening",
   "pause_status": "Pausing",
   "close_status": "Closing",
-  "title": "Anton AI Avatar Platform"
+  "title": "Anton AI Avatar Platform",
+  "message_error": "Send message failed",
+  "connect_error": "Failed to connect to the server. Please check your network or try again later",
+  "interrupt_msg": "AI Avatar be intterupted"
 }
