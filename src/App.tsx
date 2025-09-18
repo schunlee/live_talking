@@ -8,7 +8,6 @@ import { useEffect, useRef, useState } from "react";
 import StopButton from "./components/StopButton";
 import LoadingOverlay from "./components/LoadingOverlay";
 import useWebRTC from "./components/useWebRTC";
-import { useToast } from "@chakra-ui/toast";
 import avatar_client from '@/assets/avatar_client.png';
 import avatar_ai from '@/assets/avatar_ai.png';
 import PauseButton from "./components/PauseButton";
@@ -20,6 +19,7 @@ import "./locales";
 import AudioWaveButton from "./components/AudioWaveButton";
 import { useAudioRecorder } from "./components/useAudioRecorder";
 import logo from "@/assets/logo.png"
+import { toaster } from "./components/ui/toaster";
 
 function App() {
   const { t } = useTranslation();
@@ -41,7 +41,6 @@ function App() {
 
 
   const { videoRef, start, stop, sessionId} = useWebRTC({ language: lan });
-  const toast = useToast();
   const inputRef = useRef<HTMLInputElement>(null); // 初始化为 null
 
 
@@ -141,14 +140,7 @@ function App() {
       const replyMsg = { avatarUrl: avatar_ai, messageText: data.msg };
       setMessages(prev => [...prev, replyMsg]);
     } catch (err) {
-      console.error('发送失败', err);
-      toast({
-        title: "消息发送失败",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-        position: "top-right",
-      });
+      notify("消息发送失败", "error");
     }
   };
 
@@ -175,13 +167,11 @@ function App() {
 
 
   const notify = (message: string, status: "success" | "error" | "info" | "warning" = "info") => {
-    toast({
-      title: message,
-      status,
-      duration: 5000,
-      isClosable: true,
-      position: "top-right",
-    });
+    toaster.create({
+          description: message,
+          type: status,
+          closable: true,
+        });
   };
 
   const handleChatboxClick = () => {
