@@ -13,7 +13,7 @@ import avatar_client from '@/assets/avatar_client.png';
 import avatar_ai from '@/assets/avatar_ai.png';
 import PauseButton from "./components/PauseButton";
 import ArrowButton from "./components/ArrowButton";
-import { RemoteAudioVisualizer } from "./components/RemoteAudioVisualizer";
+// import { RemoteAudioVisualizer } from "./components/RemoteAudioVisualizer";
 import RecordButton from "./components/RecordButton";
 import { useTranslation } from "react-i18next";
 import "./locales";
@@ -338,26 +338,6 @@ function App() {
               {showArrowBtn && <ArrowButton direction={showChatbox ? "LEFT" : "RIGHT"} togglePanel={handleChatboxClick} />}
             </Center>
           </Flex>
-          <Flex
-            direction="column"
-            position="absolute"
-            top="10vh"
-            left="10vw"
-            transform="translate(-50%, -50%)"
-            align="center"
-            justify="center"
-            gap={4}
-            zIndex={2}
-          >
-            <Center>
-              <Flex direction="column" alignItems="center" justifyContent="center" height="100%">
-                {/* <StatusTag content={statusText} /> */}
-                <Box mt={5} ml={0} borderRadius="md">
-                  {statusText && <RemoteAudioVisualizer audioStream={audioStream} />}
-                </Box>
-              </Flex>
-            </Center>
-          </Flex>
         </Center>
 
         <Flex
@@ -406,7 +386,7 @@ function App() {
               <Box>{transcript}</Box>
               <Flex alignItems="center" gap={5}>
                 <Box><StopButton onClick={toggleMicroPhone} /></Box>
-                <PauseButton onClick={pauseMicroPhone} />
+                <PauseButton onClick={pauseMicroPhone} isSpeaking={isSpeaking} />
               </Flex>
 
             </Flex>

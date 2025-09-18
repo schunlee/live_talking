@@ -2,13 +2,15 @@ import { Button, } from '@chakra-ui/react'
 import { Tooltip } from "@/components/ui/tooltip"
 import { FaPause } from 'react-icons/fa';
 import { t } from 'i18next';
+import { VscDebugPause, VscDebugStart } from 'react-icons/vsc';
 
 interface PauseButtonProps {
+    isSpeaking: boolean;
     onClick?: () => void;
 }
 
 
-const PauseButton = ({ onClick }: PauseButtonProps) => {
+const PauseButton = ({ isSpeaking, onClick }: PauseButtonProps) => {
     return (
         <Tooltip showArrow content={t("pause_btn")}>
             <Button
@@ -20,10 +22,13 @@ const PauseButton = ({ onClick }: PauseButtonProps) => {
                 bg={'blue.500'}
                 color={'white'}
                 borderRadius="full"
+                disabled={!isSpeaking}
                 boxShadow={
                     '0px 1px 25px -5px rgb(66 153 225 / 48%), 0 10px 10px -5px rgb(66 153 225 / 43%)'
                 }>
-                <FaPause />
+                    {isSpeaking && <VscDebugPause />}
+                    {!isSpeaking && <VscDebugStart />}
+                
             </Button>
         </Tooltip>
     )
