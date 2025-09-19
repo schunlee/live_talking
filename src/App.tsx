@@ -29,18 +29,27 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [showArrowBtn, setShowArrowBtn] = useState(false);
   const [showStaticVideo, setShowStaticVideo] = useState(true);
-  const [messages, setMessages] = useState<{ avatarUrl: string, messageText: string, sender: "ai"| "user" }[]>([]);
-  const [lan, setLan] = useState("zh");
+  const [messages, setMessages] = useState<{ avatarUrl: string, messageText: string, sender: "ai" | "user" }[]>([]);
+  const userLanguage = navigator.language || navigator.userLanguage;
+
+  let targetLan = 'zh';
+  if (userLanguage === "en") {
+    targetLan = "en"
+  }
+  // alert(userLanguage);
+
+  const [lan, setLan] = useState(targetLan);
+
   const [isSpeaking, setIsSpeaking] = useState(false); // 数字人是否在说话
   const [silentCount, setSilentCount] = useState(0);   // 连续静音计数
   const silentThreshold = 4;
-  const welcomeMsg = t("intro");
+  const welcomeMsg = t("intro", { lng: lan });
   const [welcome, setWelcome] = useState(false);
   const [btnDisabled, setBtnDisabled] = useState(false);
   const [inputDisabled, setInputDisabled] = useState(false);
 
 
-  const { videoRef, start, stop, sessionId} = useWebRTC({ language: lan });
+  const { videoRef, start, stop, sessionId } = useWebRTC({ language: lan });
   const inputRef = useRef<HTMLInputElement>(null); // 初始化为 null
 
 
@@ -55,11 +64,11 @@ function App() {
   }, [isSpeaking])
 
   useEffect(() => {
-  if (sessionId && !welcome) {
-    handleSendTranscript(welcomeMsg, "echo");
-    setWelcome(true);
-  }
-}, [sessionId, welcome]);
+    if (sessionId && !welcome) {
+      handleSendTranscript(welcomeMsg, "echo");
+      setWelcome(true);
+    }
+  }, [sessionId, welcome]);
 
   const checkSpeaking = async () => {
     if (!sessionId) return;
@@ -121,7 +130,7 @@ function App() {
   const handleSendTranscript = async (text: string, typeStr: string = "chat") => {
     if (!text.trim()) return;
 
-    const newMessage = { avatarUrl: typeStr === "chat" ? avatar_client : avatar_ai, messageText: text, sender: (typeStr === "chat" ? "user": "ai") as "user" | "ai" };
+    const newMessage = { avatarUrl: typeStr === "chat" ? avatar_client : avatar_ai, messageText: text, sender: (typeStr === "chat" ? "user" : "ai") as "user" | "ai" };
     setMessages(prev => [...prev, newMessage]);
 
     try {
@@ -140,7 +149,7 @@ function App() {
         return
       }
 
-      const replyMsg = { avatarUrl: avatar_ai, messageText: data.msg  as string, sender: ("ai") as "user" | "ai" };
+      const replyMsg = { avatarUrl: avatar_ai, messageText: data.msg as string, sender: ("ai") as "user" | "ai" };
       setMessages(prev => [...prev, replyMsg]);
     } catch (err) {
       notify(t("message_error"), "error");
@@ -273,27 +282,27 @@ function App() {
         overflow="hidden"
       >
         <Flex
-      position="absolute"
-      top={5}
-      pl={10}
-      w="95%"
-      h="50px"
-      // bg="rgba(255,255,255,0.55)"
-      // backdropFilter="blur(6px)" boxShadow="lg"
-      color="white"
-      align="center"
-      justify="flex-start"
-      alignItems={"center"}
-      fontSize="xl"
-      fontWeight="bold"
-      zIndex={3}   // 保证在视频之上
-    >
-        <Image marginX={4}
-          htmlWidth="160px"
-          mixBlendMode="multiply"
-          opacity={1}
-          src={logo} />
-      </Flex>
+          position="absolute"
+          top={5}
+          pl={10}
+          w="95%"
+          h="50px"
+          // bg="rgba(255,255,255,0.55)"
+          // backdropFilter="blur(6px)" boxShadow="lg"
+          color="white"
+          align="center"
+          justify="flex-start"
+          alignItems={"center"}
+          fontSize="xl"
+          fontWeight="bold"
+          zIndex={3}   // 保证在视频之上
+        >
+          <Image marginX={4}
+            htmlWidth="160px"
+            mixBlendMode="multiply"
+            opacity={1}
+            src={logo} />
+        </Flex>
 
         <Center>
           <Box position="absolute" top={0} left={0} w="100%" h="100%" zIndex={0} display={showStaticVideo ? "none" : "block"}>
