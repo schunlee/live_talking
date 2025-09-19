@@ -34,7 +34,7 @@ function App() {
   const [isSpeaking, setIsSpeaking] = useState(false); // 数字人是否在说话
   const [silentCount, setSilentCount] = useState(0);   // 连续静音计数
   const silentThreshold = 4;
-  const welcomeMsg = "您好，我是安东智能对话数字员工，很高兴为你服务";
+  const welcomeMsg = t("intro");
   const [welcome, setWelcome] = useState(false);
   const [btnDisabled, setBtnDisabled] = useState(false);
   const [inputDisabled, setInputDisabled] = useState(false);
@@ -97,7 +97,7 @@ function App() {
   };
 
   useEffect(() => {
-    let interval: number;
+    let interval: any;
 
     if (sessionId) {
       interval = setInterval(checkSpeaking, 500); // 每 0.5s 检查一次

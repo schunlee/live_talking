@@ -20,5 +20,6 @@
   "title": "安东数字人平台",
   "message_error": "消息发送失败",
   "connect_error": "连接服务失败，请检查网络后重试",
-  "interrupt_msg": "机器人语音中断中"
+  "interrupt_msg": "机器人语音中断中",
+  "intro": "您好，我是安东智能对话数字员工，很高兴为你服务"
 }
